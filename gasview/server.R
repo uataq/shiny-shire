@@ -1,6 +1,5 @@
 # Ben Fasoli 
 
-# Determine network ---------------------------------------------------------
 network <- function(site) {
   if (site %in% c('csp', 'fru', 'hpl', 'roo', 'wbb')) {
     return('ch4')
