@@ -1,0 +1,29 @@
+# Ben Fasoli
+setwd('/srv/shiny-server/map/web/')
+
+navbarPage(title=div(img(src='utelogo.png', height=18), 'Atmospheric Trace gas & Air Quality'), 
+           windowTitle='Air Quality & Trace Gas Lab',
+           theme='bootstrap.css',
+           collapsible=T,
+           tabPanel(HTML('Map</a></li><li><a href=\"http://air.utah.edu/s/tech/\">Technical Utilities'), 
+                    div(class='outer',
+                        tags$head(includeCSS('styles.css'),
+                                  HTML('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">')),
+                        leafletOutput('map', height='100%', width='100%'),
+                        absolutePanel(top=20, right=35, width=240,
+                                      selectInput('tracer', h5('Options'),
+                                                  c('Carbon Dioxide (CO2)',
+                                                    'Methane (CH4)',
+                                                    'Particulate Matter (PM2.5)',
+                                                    'Ozone (O3)')),
+                                      checkboxInput('show_other', 'Non-UATAQ sites', value=F),
+                                      textOutput('last_time')),
+                        absolutePanel(bottom=20, left=35,
+                                      a(href='http://lair.utah.edu',
+                                        img(src='LAIR_logo.png', width=300, align='middle')),
+                                      br(), br(),
+                                      a(href='http://sustainability.utah.edu',
+                                        img(src='SCIF_logo.png', width=150, align='middle')))
+                    )),
+           tabPanel('About', includeMarkdown('about.md'))
+)

@@ -1,0 +1,17 @@
+.outer {
+  position: fixed;
+  top: 41px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.content-wrapper, .right-side {
+  background-color: #eaeaea;
+}
+
+.nav-tabs-custom .nav-tabs li.active {
+  border-top-color: #D2352C;
+} 
