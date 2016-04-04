@@ -16,7 +16,8 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem('UATAQ Homepage', href='http://air.utah.edu/', newtab=F, icon=icon('home')),
     menuItem('Data Processing', tabName='Nerdmobile', icon=icon('car'), selected=T),
-    menuItem('R Source Code', tabName='Code', icon=icon('code'))
+    menuItem('R Source Code', newtab=F, icon=icon('code'),
+             href='https://github.com/benfasoli/shiny-shire/tree/master/nerdmobile')
   )
 )
 
@@ -27,15 +28,6 @@ body <- dashboardBody(
     tabItem('Nerdmobile',
             tags$head(includeCSS('styles.css')),
             uiOutput('process_ui')
-    ),
-    
-    tabItem('Code', 
-            fluidRow(
-              column(12,
-                     box(width=NULL, title='R Processing Secret Sauce', status='danger', solidHeader=T,
-                         tags$pre(HTML(paste(system('cat src.R', intern=T), collapse='<br>'))))
-              )
-            )
     )
   )
 )
