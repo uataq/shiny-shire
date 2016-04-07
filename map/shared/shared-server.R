@@ -72,9 +72,9 @@ function(input, output, session) {
     } else if('slc' %in% names(q) && q[['slc']]=='F') {
       leafletProxy('map') %>% setView(lng=-111.2, lat=40.7425, zoom=8)
     }
-    if('tracer' %in% names(q) && q[['tracer']] %in% SHORT_SPECIES) {
+    if('tracer' %in% names(q) && q[['tracer']] %in% short_species) {
       updateSelectInput(session, 'tracer', 
-                        selected=names(SHORT_SPECIES)[SHORT_SPECIES == q[['tracer']]])
+                        selected=names(short_species)[short_species == q[['tracer']]])
     }
   })
   
@@ -178,7 +178,7 @@ function(input, output, session) {
         if(nrow(md[mask, ]) > 300){
           temp <- md[mask, ]
           smoothby <- 30
-          temp[ ,short_species()] <- uataq::run_smooth(temp[ ,short_species()], n=smoothby)
+          temp[ ,short_species[[input$tracer]]] <- uataq::run_smooth(temp[ ,short_species[[input$tracer]]], n=smoothby)
           temp <- temp[seq(1, nrow(temp), by=smoothby), ]
         } else temp <- md[mask, ]
 
