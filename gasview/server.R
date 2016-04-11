@@ -1,7 +1,9 @@
 # Ben Fasoli 
 
 network <- function(site) {
-  if (site %in% c('csp', 'fru', 'hpl', 'roo', 'wbb')) {
+  if (is.null(site)) {
+    return(NULL)
+  } else if (site %in% c('csp', 'fru', 'hpl', 'roo', 'wbb')) {
     return('ch4')
   } else if (site %in% c('dbk', 'heb', 'lgn', 'rpk', 'sug', 'sun')) {
     return('co2')
@@ -36,7 +38,7 @@ function(input, output, session) {
   
   # Column choosing UI --------------------------------------------------------
   output$data_options <- renderUI({
-    validate(need(input$dataset == 'Instrument diagnostics', ''))
+    if (input$dataset != 'Instrument diagnostics') return()
     if (network(input$site) == 'ch4') {
       selectInput('data', 'Display', c('CH4_ppm', 'CH4_ppm_sd', 
                                        'H2O_ppm', 'H2O_ppm_sd', 
@@ -61,7 +63,7 @@ function(input, output, session) {
   
   # Read data -----------------------------------------------------------------
   observeEvent(r$refresh, {
-    validate(need(!is.null(network(r$site)), ''))
+    if (is.null(network(r$site))) return()
     if (input$dataset == 'Calibrated dataset') {
       opts <- switch(network(r$site),
                      'co2' = list(type = 'Tddddid',
@@ -119,8 +121,8 @@ function(input, output, session) {
     isolate({
       dy <- xts(select(r$data, -Time_UTC), r$data$Time_UTC) %>%
         dygraph() %>%
-        dyOptions(colors = c('#D2352C', rev(
-          RColorBrewer::brewer.pal(8, 'Dark2'))))
+        dyOptions(colors = c('#D2352C', 
+                             RColorBrewer::brewer.pal(7, 'Set2')))
       if (input$dataset == 'Calibrated dataset') {
         if ('CH4d_ppm_cal' %in% names(r$data)) {
           dy <- dy %>%
