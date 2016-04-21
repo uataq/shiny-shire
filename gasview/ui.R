@@ -2,7 +2,8 @@
 # Ben Fasoli
 
 # Header Layout ---------------------------------------------------------------
-header <- dashboardHeader(title=div(img(src='utelogo.png', height=19), 'ATAQ Lab'))
+header <- dashboardHeader(title=div(img(src='utelogo.png', height=19), 'ATAQ Lab'),
+                          titleWidth='100%')
 
 # Sidebar Layout --------------------------------------------------------------
 sidebar <- dashboardSidebar(
