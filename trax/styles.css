@@ -5,3 +5,10 @@
 .nav-tabs-custom .nav-tabs li.active {
   border-top-color: #D2352C;
 } 
+
+.uataq-head a:link,
+.uataq-head a:visited, 
+.uataq-head a:hover, 
+.uataq-head a:active {
+  color: rgb(68, 68, 68);
+}

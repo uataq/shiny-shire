@@ -3,21 +3,25 @@
 source('modules.R')
 
 # Header Layout ---------------------------------------------------------------
-header <- dashboardHeader(title=div(img(src='utelogo.png', height=19), 'ATAQ Lab'))
+header <- dashboardHeader(title=div(a(img(src='utelogo.png', height=19), 'ATAQ Lab',
+                                  href='http://air.utah.edu'),
+                                  class='uataq-head'),
+                          titleWidth='100%')
 
 # Sidebar Layout --------------------------------------------------------------
-sidebar <- dashboardSidebar(
-  sidebarMenu(
-    .list=list(menuItem('UATAQ Homepage', href='http://air.utah.edu/', newtab=F, icon=icon('home')),
-               menuItem('Interactive Display', tabName='display', icon=icon('train')),
-               menuItem('Historic Data', href='http://meso1.chpc.utah.edu/mesotrax/', newtab=T, icon=icon('backward'))
-               # br(),
-               # apply(opts, 1, function(x){menuItem(x[1], tabName=x[2], icon=icon('minus'))}),
-               # menuItem('Diagnostics', icon=icon('flask'),
-               #          apply(opts.other, 1, function(x){menuSubItem(x[1], tabName=x[2], icon=icon('minus'))}))
-    )
-  )
-)
+# sidebar <- dashboardSidebar(
+#   sidebarMenu(
+#     .list=list(menuItem('UATAQ Homepage', href='http://air.utah.edu/', newtab=F, icon=icon('home')),
+#                menuItem('Interactive Display', tabName='display', icon=icon('train')),
+#                menuItem('Historic Data', href='http://meso1.chpc.utah.edu/mesotrax/', newtab=T, icon=icon('backward'))
+#                # br(),
+#                # apply(opts, 1, function(x){menuItem(x[1], tabName=x[2], icon=icon('minus'))}),
+#                # menuItem('Diagnostics', icon=icon('flask'),
+#                #          apply(opts.other, 1, function(x){menuSubItem(x[1], tabName=x[2], icon=icon('minus'))}))
+#     )
+#   )
+# )
+sidebar <- dashboardSidebar(disable=T) 
 
 # Body Layout -----------------------------------------------------------------
 body <- dashboardBody(
