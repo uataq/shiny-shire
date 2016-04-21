@@ -1,11 +1,12 @@
 # ---------------------------------------------------------------------------------
 # WBB FILL IN SPIKE CALCULATOR
 output$tankspike_ambient_wbb <- renderUI({
-  wbb_file <- '/srv/shiny-server/air/data/airmap.rds'
-  wbb <- tail(subset(readRDS(wbb_file)$data, site=='wbb'), 1)
+  wbb_file <- '/srv/shiny-server/map/shared/airmap.rds'
+  wbb <- tail(subset(readRDS(wbb_file)$fixed, site=='wbb'), 1)
   if((Sys.time() - wbb$Time) < 60 * 60){
-    textInput('tankspike_ambient', h5(format(wbb$Time, format='Ambient - %Y-%m-%d %H:%M %Z')), 
-              value=as.character(wbb$co2))
+    textInput('tankspike_ambient', 
+              h5(format(wbb$Time_UTC, format='Ambient - %Y-%m-%d %H:%M %Z')), 
+              value=as.character(wbb$CO2d_ppm))
   } else NULL
 })
 

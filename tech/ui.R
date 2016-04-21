@@ -21,20 +21,26 @@ header <- dashboardHeader(title=div(img(src='utelogo.png', height=19), 'ATAQ Lab
 sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem('Homepage', tabName='homepage', icon=icon('home'), newtab=F),
-    menuItem('Widgets', icon = icon('bar-chart'), tabName='widgets',
-             menuSubItem('Concentration Dilution', tabName='tankdilution', selected=FALSE),
-             menuSubItem('Cylindrical Volume', tabName='cylvol', selected=FALSE),
-             menuSubItem('Dewpoint to PPM', tabName='dewtoppm', selected=FALSE),
-             menuSubItem('MiniVol Flow', tabName='minivol', selected=FALSE),
-             menuSubItem('Tank Spike', tabName='tankspike', selected=FALSE)),
-    menuItem('EZMet', href='http://air.utah.edu/s/ezmet/', newtab=F, icon=icon('cloud')),
-    menuItem('Nerdmobile', href='http://air.utah.edu/s/nerdmobile/', newtab=F, icon=icon('car')),
-    menuItem('Site Access', href='http://air.utah.edu/sites/', newtab=F, icon=icon('location-arrow')),
+    menuItem('Data', icon = icon('area-chart'), tabName='data',
+             menuSubItem('Real-time map', href='http://air.utah.edu', icon=icon('globe'), newtab=F),
+             menuSubItem('Interactive timeseries', href='http://air.utah.edu/s/gasview/', icon=icon('line-chart'), newtab=F),
+             menuSubItem('TRAX light-rail', href='http://air.utah.edu/s/trax/', icon=icon('train'), newtab=F),
+             menuSubItem('Nerdmobile mobile lab', href='http://air.utah.edu/s/nerdmobile/', icon=icon('flask'), newtab=F)),
+    menuItem('Tools', icon = icon('th'), tabName='widgets',
+             menuSubItem('EZMet Arduino GUI', href='http://air.utah.edu/s/ezmet/', icon=icon('cloud')),
+             menuSubItem('Concentration Dilution', tabName='tankdilution', icon=icon('hourglass-half')),
+             menuSubItem('Cylindrical Volume', tabName='cylvol', icon=icon('circle-o')),
+             menuSubItem('Dewpoint to PPM', tabName='dewtoppm', icon=icon('tint')),
+             # menuSubItem('MiniVol Flow', tabName='minivol', selected=FALSE),
+             menuSubItem('Tank Spike', tabName='tankspike', icon=icon('arrow-up'))),
+    # menuItem('Nerdmobile', href='http://air.utah.edu/s/nerdmobile/', newtab=F, icon=icon('car')),
+    menuItem('Site Access', href='http://air.utah.edu/sites/', icon=icon('location-arrow')),
     br(),
-    menuItemOutput('ui_auth_menu')
-  ),
+    # menuItemOutput('ui_auth_menu')
+    menuItem('Sign in', href='http://air.utah.edu/s/auth/', icon = icon('lock'), newtab=F)
+  )
   
-  uiOutput('ui_signin_status')
+  # uiOutput('ui_signin_status')
 )
 
 # ---------------------------------------------------------------------------------
