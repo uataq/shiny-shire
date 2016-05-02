@@ -43,6 +43,12 @@ body <- dashboardBody(
           bsAlert('changepass_alert')
   ),
   
+  # Site access information window ---------------------------------------------
+  bsModal('siteaccess_window', 'UATAQ Site Information', 'open_siteaccess_window', size='large',
+          tags$iframe(src='site_access.html',
+                      onload="this.style.height=this.contentDocument.body.scrollHeight +'px';")
+  ),
+  
   tabItems(
     # Initial sign in tab ------------------------------------------------------
     tabItem('signin', status='danger',
@@ -56,10 +62,18 @@ body <- dashboardBody(
             fluidRow(
               column(width=8,
                      tabBox(id='note_network', width=NULL,
-                            tabPanel('Field Notes',
+                            tabPanel('Sites',
                                      selectInput('note_site', label=h5('Choose location'), 
-                                                 choices=c('', loc_opts))),
-                            tabPanel('Site Checklist',
+                                                 choices=loc_opts, selected='fru'),
+                                     actionButton('open_siteaccess_window', 'Site information')),
+                            tabPanel('Uinta Tank Pressures',
+                                     a(href='http://home.chpc.utah.edu/~bfasoli/uinta_tanks/fru.jpg', target='_blank',
+                                       img(src='http://home.chpc.utah.edu/~bfasoli/uinta_tanks/fru.jpg')),
+                                     a(href='http://home.chpc.utah.edu/~bfasoli/uinta_tanks/roo.jpg', target='_blank',
+                                       img(src='http://home.chpc.utah.edu/~bfasoli/uinta_tanks/roo.jpg')),
+                                     a(href='http://home.chpc.utah.edu/~bfasoli/uinta_tanks/hpl.jpg', target='_blank',
+                                       img(src='http://home.chpc.utah.edu/~bfasoli/uinta_tanks/hpl.jpg'))),
+                            tabPanel('Onsite Checklist',
                                      checkboxGroupInput('null1', label=NULL,
                                                         choices=c('Reference cell (N2) flow (100mL/min)',
                                                                   'Sample cell flow (400mL/min)',

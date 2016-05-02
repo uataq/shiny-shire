@@ -3,10 +3,9 @@ updateTabItems(session, 'sidebar_active', 'signin')
 # Default login window open
 observe({
   input$open_login_window
-  if(!is.null(input$sidebar_active) &&
-     input$sidebar_active == 'signin') {
+  if (!is.null(input$sidebar_active) && input$sidebar_active == 'signin') {
     toggleModal(session, 'login_window', 'open')
-  }
+  } 
 })
 auth <- reactiveValues(logged = F,
                        name   = NA,
@@ -19,11 +18,20 @@ auth <- reactiveValues(logged = F,
 
 # Dynamic sidebar options ----------------------------------------------------
 output$sidebar_auth <- renderMenu({
+  # 'b' for basic technician
+  # 'a' for admin technician
+  # 'd' for uataq data access
+  # 's' for site access information
   menuitems <- list()
   if (!auth$logged){
     menuitems <- c(menuitems, list(
       menuItem('Sign in', tabName='signin', icon = icon('lock'), selected=T)))
   } else {
+    # if (grepl('s', auth$level)) {
+    #   menuitems <- c(menuitems, list(
+    #     menuItem('Site Access', icon=icon('location-arrow'),
+    #              tabName='site_access')))
+    # }
     if (grepl('b', auth$level)) {
       # Basic technician level, rw field form and r tank tracker
       menuitems <- c(menuitems, list(
@@ -40,11 +48,11 @@ output$sidebar_auth <- renderMenu({
         menuItem('Download Tank Data', icon=icon('download'), tabName='tank_download')))
     }
     if (grepl('d', auth$level)) {
-      # Data access level
       menuitems <- c(menuitems, list(
         menuItem('Download UATAQ Measurements', icon=icon('download'),
                  tabName='data_download')))
     }
+    
     menuitems <- c(menuitems, list(
       br(), br(),
       sidebarUserPanel(span('Logged in as', strong(auth$name)),

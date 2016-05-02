@@ -42,7 +42,7 @@ output$site_status <- renderUI({
     lt <- get_notes()[[input$note_site]] %>%
       .$time_out %>%
       max(na.rm=T)
-    T_info <- infoBox('Last updated', format(lt, format='%Y-%m-%d\n %H:%M %Z', tz='UTC'), 
+    T_info <- infoBox('Last updated', format(lt, format='%Y-%m-%d\n %H:%M %Z', tz='America/Denver'), 
                       color='yellow', fill=F, icon=icon('calendar', lib='glyphicon'))
     
     # Find lowest tank pressure
@@ -127,7 +127,9 @@ output$ts_note <- renderPlot({
 })
 
 # UI - Datatable of notes ------------------------------------------------------
-output$dt_note <- DT::renderDataTable(options=list(scrollX=T), {
+output$dt_note <- DT::renderDataTable(server=F, rownames=F, style='bootstrap', 
+                                      options=list(responsive=T),
+                                      extensions=c('responsive'), {
   notes <- get_notes()
   if(input$note_site %in% names(notes)){
     dt <- notes[[input$note_site]]
@@ -147,7 +149,6 @@ observeEvent(input$note_save, {
   if (nchar(text) < 1) text <- NA
   
   if (!is.na(time_in) && !is.na(time_out)) {
-    ff$refresh <- F
     nd <- data_frame(time_in = time_in,
                      time_out = time_out,
                      n2_psi = n2_psi,
@@ -155,9 +156,13 @@ observeEvent(input$note_save, {
                      name = auth$name)
     
     notes <- get_notes()
-    notes[input$note_site] <- list(bind_rows(notes[input$note_site], nd))
-    saveRDS(Notes, format(Sys.time(), 'notes/%y%m%d_%H%M_notearchive.rds'))
-    isolate(ff$refresh <- TRUE)
+    temp <- saveRDS(list(n1=notes[[input$note_site]],
+                         n2=input$note_site,
+                         n3=notes), '~/test.rds')
+    notes[input$note_site] <- list(bind_rows(notes[[input$note_site]], nd))
+    isolate(fft$refresh <- F)
+    saveRDS(notes, format(Sys.time(), 'src/notes/%y%m%d_%H%M_notearchive.rds'))
+    isolate(fft$refresh <- T)
     
     updateTextInput(session, 'note_text', value='')
     updateTextInput(session, 'note_time', value=format(Sys.time(), '%Y-%m-%d %H:%M %Z', tz='UTC'))

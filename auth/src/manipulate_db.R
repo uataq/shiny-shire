@@ -21,10 +21,10 @@ rm(list=ls())
 # Site naming convention change ------------------------------------------------
 readRDS(tail(dir('src/tanks', full.names=T), 1)) %>%
   lapply(function(tank) {
-    long <- c('Murray', 'Rose Park', 'Heber', 'Sugarhouse', 'Daybreak', 
-              'Fruitland', 'Roosevelt', 'WBB', 'Draper', 'Logan', 'Trax', 'Castle Peak', 'WBB808')
-    short <- c('mur', 'rpk', 'heb', 'sug', 'dbk',
-               'fru', 'roo', 'wbb', 'sun', 'lgn', 'trx01', 'csp', 'wbb')
+    long <- c('Horsepool', 'Murray', 'Rose Park', 'Heber', 'Sugarhouse', 'Daybreak', 
+              'Fruitland', 'Roosevelt', 'WBB', 'Draper', 'Logan', 'Trax', 'csp', 'WBB808')
+    short <- c('hpl', 'mur', 'rpk', 'heb', 'sug', 'dbk',
+               'fru', 'roo', 'wbb', 'sun', 'lgn', 'trx01', 'cpk', 'wbb')
     for (i in 1:length(long)) {
       loc <- tail(tank$Location, 1)
       if (!is.na(loc) && loc == long[i]) {
@@ -33,4 +33,4 @@ readRDS(tail(dir('src/tanks', full.names=T), 1)) %>%
     }
     tank
   }) %>%
-  saveRDS('src/tanks/160418_0955_tankdata.rds')
+  saveRDS(format(Sys.time(), 'src/tanks/%y%m%d_%H%M_tankdata.rds'))
