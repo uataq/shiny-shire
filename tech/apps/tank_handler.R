@@ -410,10 +410,10 @@ observeEvent(input$tank_remove_trigger, {
         Tanks[Tank] <- NULL
       }
     } else return()
-    isolate(dt$refresh <- FALSE)
+    isolate(dt$refresh <- F)
     saveRDS(Tanks, format(Sys.time(), 'tanks/%y%m%d_%H%M_tankdata.rds'))
     updateSelectInput(session, 'tank_num_remove', selected='')
-    isolate(dt$refresh <- TRUE)
+    isolate(dt$refresh <- T)
   }
 })
 
