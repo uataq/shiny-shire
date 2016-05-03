@@ -34,7 +34,8 @@ sidebar <- dashboardSidebar(
              # menuSubItem('MiniVol Flow', tabName='minivol', selected=FALSE),
              menuSubItem('Tank Spike', tabName='tankspike', icon=icon('arrow-up'))),
     # menuItem('Nerdmobile', href='http://air.utah.edu/s/nerdmobile/', newtab=F, icon=icon('car')),
-    menuItem('Site Access', href='http://air.utah.edu/sites/', icon=icon('location-arrow')),
+    # menuItem('Site Access', href='http://air.utah.edu/sites/', icon=icon('location-arrow')),
+    menuItem('Data processing', href='https://github.com/benfasoli/lair-proc', icon=icon('code')),
     br(),
     # menuItemOutput('ui_auth_menu')
     menuItem('Sign in', href='http://air.utah.edu/s/auth/', icon = icon('lock'), newtab=F)
