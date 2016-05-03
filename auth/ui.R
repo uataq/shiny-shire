@@ -65,7 +65,7 @@ body <- dashboardBody(
                             tabPanel('Sites',
                                      selectInput('note_site', label=h5('Choose location'), 
                                                  choices=loc_opts, selected='fru'),
-                                     actionButton('open_siteaccess_window', 'Site information')),
+                                     actionButton('open_siteaccess_window', 'Site access', icon=icon('unlock'))),
                             tabPanel('Uinta Tank Pressures',
                                      a(href='http://home.chpc.utah.edu/~bfasoli/uinta_tanks/fru.jpg', target='_blank',
                                        img(src='http://home.chpc.utah.edu/~bfasoli/uinta_tanks/fru.jpg')),

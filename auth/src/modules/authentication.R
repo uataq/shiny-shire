@@ -27,11 +27,6 @@ output$sidebar_auth <- renderMenu({
     menuitems <- c(menuitems, list(
       menuItem('Sign in', tabName='signin', icon = icon('lock'), selected=T)))
   } else {
-    # if (grepl('s', auth$level)) {
-    #   menuitems <- c(menuitems, list(
-    #     menuItem('Site Access', icon=icon('location-arrow'),
-    #              tabName='site_access')))
-    # }
     if (grepl('b', auth$level)) {
       # Basic technician level, rw field form and r tank tracker
       menuitems <- c(menuitems, list(
@@ -52,6 +47,11 @@ output$sidebar_auth <- renderMenu({
         menuItem('Download UATAQ Measurements', icon=icon('download'),
                  tabName='data_download')))
     }
+    # if (grepl('s', auth$level)) {
+    #   menuitems <- c(menuitems, list(
+    #     menuItem('Site Access', icon=icon('location-arrow'),
+    #              tabName='site_access')))
+    # }
     
     menuitems <- c(menuitems, list(
       br(), br(),
