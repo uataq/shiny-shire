@@ -1,4 +1,3 @@
-# UNIVERSITY OF UTAH AIR QUALITY AND TRACE GAS LAB
 # Ben Fasoli
 
 # Header Layout ---------------------------------------------------------------

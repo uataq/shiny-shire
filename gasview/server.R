@@ -66,16 +66,16 @@ function(input, output, session) {
     if (is.null(network(r$site))) return()
     if (input$dataset == 'Calibrated dataset') {
       opts <- switch(network(r$site),
-                     'co2' = list(type = 'Tddddid',
+                     'co2' = list(type = 'Tddddidc',
                                   col  = 'CO2d_ppm_cal'),
-                     'ch4' = list(type = 'Tddddiddddi',
+                     'ch4' = list(type = 'Tddddiddddic',
                                   col  = c('CO2d_ppm_cal', 'CH4d_ppm_cal')))
       loc <- file.path('/projects/backups/smaug/measurements/data', 
                        r$site, 'calibrated/%Y_%m_calibrated.dat')
     } else {
       opts <- switch(network(r$site),
-                     'co2' = list(type = 'Tiiiiiidddddddddddddcdd'),
-                     'ch4' = list(type = 'Tddddddddddddddddddddicdd'))
+                     'co2' = list(type = 'Tiiiiiidddddddddddddcddc'),
+                     'ch4' = list(type = 'Tddddddddddddddddddddiccdd'))
       opts$col <- input$data
       loc <- file.path('/projects/backups/smaug/measurements/data', 
                        r$site, 'parsed/%Y_%m_parsed.dat')
