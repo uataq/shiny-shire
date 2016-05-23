@@ -5,7 +5,7 @@ navbarPage(title=div(img(src='utelogo.png', height=18), 'Atmospheric Trace gas &
            windowTitle='Air Quality & Trace Gas Lab',
            theme='bootstrap.css',
            collapsible=T,
-           tabPanel(HTML('Map</a></li><li><a href=\"http://air.utah.edu/s/tech/\">Technical Utilities'), 
+           tabPanel(HTML('Map</a></li><li><a href=\"http://air.utah.edu/s/tech/\">Utilities'), 
                     div(class='outer',
                         tags$head(includeCSS('styles.css'),
                                   HTML('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">')),
