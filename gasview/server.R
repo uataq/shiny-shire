@@ -1,5 +1,7 @@
 # Ben Fasoli 
 
+max_obs <- 150000
+
 network <- function(site) {
   if (is.null(site)) {
     return(NULL)
@@ -70,14 +72,14 @@ function(input, output, session) {
                                   col  = 'CO2d_ppm_cal'),
                      'ch4' = list(type = 'Tddddiddddic',
                                   col  = c('CO2d_ppm_cal', 'CH4d_ppm_cal')))
-      loc <- file.path('/projects/backups/smaug/measurements/data', 
+      loc <- file.path('/projects/data/measurements/data', 
                        r$site, 'calibrated/%Y_%m_calibrated.dat')
     } else {
       opts <- switch(network(r$site),
                      'co2' = list(type = 'Tiiiiiidddddddddddddcddc'),
                      'ch4' = list(type = 'Tddddddddddddddddddddiccdd'))
       opts$col <- input$data
-      loc <- file.path('/projects/backups/smaug/measurements/data', 
+      loc <- file.path('/projects/data/measurements/data', 
                        r$site, 'parsed/%Y_%m_parsed.dat')
     }
     time_range <- c(as.POSIXct(input$date_range[1], tz='UTC'),
@@ -91,6 +93,7 @@ function(input, output, session) {
           readr::read_csv(f, locale=locale(tz='UTC'), col_types=col_types)
       }, col_types=opts$type) %>%
       bind_rows() %>%
+      do({if (nrow(.) > 1) . else return(data_frame())}) %>%
       filter(Time_UTC >= time_range[1], Time_UTC <= time_range[2]) %>%
       (function(df){
         if ('ID_co2' %in% names(df)) {
@@ -101,13 +104,15 @@ function(input, output, session) {
             out[col_make] <- df[input$data]
             out[df$ID != col, col_make] <- NA
           }
-        } else out <- select(df, Time_UTC, one_of(opts$col))
+        } else if (length(names(df)) > 0) {
+          out <- select(df, Time_UTC, one_of(opts$col))
+        } else out <- df
         return(out)
       })
     
-    if (nrow(dat) > 100000) {
+    if (nrow(dat) > max_obs) {
       r$downsample <- nrow(dat)
-      dat <- sample_n(dat, 100000)
+      dat <- sample_n(dat, max_obs)
     } else r$downsample <- NULL
     r$data <- dat
   })
@@ -121,12 +126,14 @@ function(input, output, session) {
     isolate({
       dy <- xts(select(r$data, -Time_UTC), r$data$Time_UTC) %>%
         dygraph() %>%
-        dyOptions(colors = c('#D2352C', 
+        dyOptions(colors = c('#D2352C', '#1A2226','#00ADB5', '#DD6E42', '#4F6D7A',
                              RColorBrewer::brewer.pal(7, 'Set2')))
       if (input$dataset == 'Calibrated dataset') {
         if ('CH4d_ppm_cal' %in% names(r$data)) {
           dy <- dy %>%
             dySeries('CH4d_ppm_cal', axis='y2') %>%
+            dyAxis('y', label='CO2 (ppm)') %>%
+            dyAxis('y2', label='CH4 (ppm)') %>%
             dyOptions(drawGrid=F)
         } else {
           dy <- dy %>% dyOptions(fillGraph=T, drawGrid=F, fillAlpha=0.25)
@@ -146,8 +153,9 @@ function(input, output, session) {
     tagList(
       hr(),
       p(HTML('<i class="fa fa-exclamation-circle"></i>'),
-        paste('Data is randomly sampled down to 100,000 points from', 
-              prettyNum(r$downsample, big.mark=',', scientific=F),
+        paste('Data is randomly sampled down to', 
+              prettyNum(max_obs, big.mark=',', scientific=F),
+              'points from', prettyNum(r$downsample, big.mark=',', scientific=F),
               'observations. To see the highest frequency data, try a shorter',
               'time period.'))
     )
@@ -156,9 +164,10 @@ function(input, output, session) {
 
 # DEBUG
 # input <- list(
-#   site='wbb',
+#   site='sun',
 #   dataset='Instrument diagnostics',
 #   data='CO2d_ppm',
 #   date_range = c(Sys.Date()-2, Sys.Date())
 # )
-# network <- function() {'ch4'}
+# r <- list(site=input$site)
+# network <- function() {'co2'}
