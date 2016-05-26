@@ -3,7 +3,8 @@ setwd('/srv/shiny-server/map/web/')
 
 navbarPage(title=div(img(src='utelogo.png', height=18), 'Atmospheric Trace gas & Air Quality'), 
            windowTitle='Air Quality & Trace Gas Lab',
-           theme='bootstrap.css',
+           # theme='bootstrap.css',
+           theme='bootstrap',
            collapsible=T,
            tabPanel(HTML('Map</a></li><li><a href=\"http://air.utah.edu/s/tech/\">Utilities'), 
                     div(class='outer',
@@ -25,5 +26,13 @@ navbarPage(title=div(img(src='utelogo.png', height=18), 'Atmospheric Trace gas &
                                       a(href='http://sustainability.utah.edu',
                                         img(src='SCIF_logo.png', width=150, align='middle')))
                     )),
+           # navbarMenu('test', tabPanel('hi!', 'hi', href='test')),
+           # navbarMenu('Data', HTML('<li><a href="http://air.utah.edu/s/nerdmobile/">Nerdmobile</a></li>')),
+           # navbarMenu('Data', tabPanel(HTML('</a><a href=\"http://air.utah.edu/s/tech/\">test'))),
+           # HTML('<li class="dropdown">',
+           #      '<a href="#" class="dropdown-toggle" data-toggle="dropdown">',
+           #      'Data <b class="caret"></b></a>',
+           #      '<ul class="dropdown-menu">',
+           #      '<li><a href="http://air.utah.edu/s/nerdmobile/">Nerdmobile</a></li></ul></li>'),
            tabPanel('About', includeMarkdown('about.md'))
 )
