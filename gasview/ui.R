@@ -33,6 +33,7 @@ body <- dashboardBody(
   fluidRow(
     column(12,
            box(status='danger', width=NULL,
+               conditionalPanel('input.site == ""', 'To get started, choose a location on the left.'),
                dygraphOutput('ts', height=600),
                uiOutput('downsample_ui')
            )
