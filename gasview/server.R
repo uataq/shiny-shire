@@ -1,6 +1,6 @@
 # Ben Fasoli 
 
-max_obs <- 150000
+max_obs <- 100000
 
 network <- function(site) {
   if (is.null(site)) {
@@ -93,8 +93,20 @@ function(input, output, session) {
           readr::read_csv(f, locale=locale(tz='UTC'), col_types=col_types)
       }, col_types=opts$type) %>%
       bind_rows() %>%
-      do({if (nrow(.) > 1) . else return(data_frame())}) %>%
-      filter(Time_UTC >= time_range[1], Time_UTC <= time_range[2]) %>%
+      do({if (nrow(.) > 1) return(.) else return(data_frame())}) %>%
+      filter(Time_UTC >= time_range[1], Time_UTC <= time_range[2])
+    
+    if (nrow(dat) > max_obs) {
+      r$downsample <- nrow(dat)
+      if ('ID_co2' %in% names(dat)) {
+        dat <- filter(dat, ID_co2 != -10) %>%
+          bind_rows( filter(dat, ID_co2 == -10) %>%
+                       sample_n(max_obs) ) %>%
+          arrange(Time_UTC)
+      } else dat <- sample_n(dat, max_obs)
+    } else r$downsample <- NULL
+    
+    dat <- dat %>%
       (function(df){
         if ('ID_co2' %in% names(df)) {
           df <- filter(df, ID_co2 != -99)
@@ -110,10 +122,7 @@ function(input, output, session) {
         return(out)
       })
     
-    if (nrow(dat) > max_obs) {
-      r$downsample <- nrow(dat)
-      dat <- sample_n(dat, max_obs)
-    } else r$downsample <- NULL
+
     r$data <- dat
   })
   
@@ -153,11 +162,11 @@ function(input, output, session) {
     tagList(
       hr(),
       p(HTML('<i class="fa fa-exclamation-circle"></i>'),
-        paste('Data is randomly sampled down to', 
+        paste('Atmospheric data is randomly sampled down to', 
               prettyNum(max_obs, big.mark=',', scientific=F),
               'points from', prettyNum(r$downsample, big.mark=',', scientific=F),
-              'observations. To see the highest frequency data, try a shorter',
-              'time period.'))
+              'observations. To see the highest frequency data, try a smaller',
+              'date range.'))
     )
   })
 }
