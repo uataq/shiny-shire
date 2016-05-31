@@ -7,3 +7,8 @@ div.outer {
   overflow: hidden;
   padding: 0;
 }
+
+.spacer {
+height: 10px;
+margin: 0 40px;
+}

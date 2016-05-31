@@ -42,7 +42,6 @@ url_link <- data_frame(csp='http://air.utah.edu/s/gasview/?site=',
                        snb='http://www.eol.ucar.edu/homes/stephens/RACCOON/',
                        wnd=snb)
 
-
 min_max <- data_frame('Carbon Dioxide (CO2)'=c(400, 550),
                'Methane (CH4)'=c(1.9, 2.5),
                'Particulate Matter (PM2.5)'=c(0, 55),
@@ -116,7 +115,7 @@ function(input, output, session) {
                       a(target='_blank', 
                         href=paste0(url_link[[data()$site[i]]], data()$site[i]),
                         tags$button(type='button',
-                                    class='btn action-button btn-large btn-primary',
+                                    class='btn action-button btn-large btn-danger',
                                     HTML('<i class="fa fa-line-chart"></i>Go to the data!'))))
     }
     pop
