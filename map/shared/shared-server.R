@@ -24,7 +24,7 @@ pretty_site_names <- data_frame(csp='Castle Peak',
                                 snb='Snowbird (RACCOON)',
                                 wnd='Wendover')
 
-url_link <- data_frame(csp='http://air.utah.edu/s/gasview/?site=',
+url_link <- data_frame(csp='http://air.utah.edu/s/view/gasview/?site=',
                        dbk=csp,
                        fru=csp,
                        heb=csp,
@@ -34,7 +34,7 @@ url_link <- data_frame(csp='http://air.utah.edu/s/gasview/?site=',
                        rpk=csp,
                        sug=csp,
                        sun=csp,
-                       trx01='http://air.utah.edu/s/trax/',
+                       trx01='http://air.utah.edu/s/view/trax/',
                        trx02=trx01,
                        wbb=csp,
                        
@@ -102,7 +102,7 @@ function(input, output, session) {
     pup.times <- format(as.POSIXct(data()$Time_UTC, origin='1970-01-01'), '%Y-%m-%d %H:%M %Z')
     pop <- character()
     for (i in 1:nrow(data())) {
-      conc <-  round(data()[[i, short_species[[input$tracer]]]], 2)
+      conc <-  round(as.numeric(data()[i, short_species[[input$tracer]]]), 2)
       lastupd <- pup.times[i]
       
       if (is.na(conc)) conc <- 'Unknown'
@@ -193,7 +193,7 @@ function(input, output, session) {
                      a(target='_blank',
                        href=url_link[mdat$site],
                        tags$button(type='button',
-                                   class='btn action-button btn-large btn-primary',
+                                   class='btn action-button btn-large btn-danger',
                                    HTML('<i class="fa fa-line-chart"></i>Go to the data!'))))
 
         leaf <- leaf %>%

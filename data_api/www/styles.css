@@ -1,0 +1,26 @@
+.content-wrapper, .right-side {
+  background-color: #eaeaea;
+}
+
+.nav-tabs-custom .nav-tabs li.active {
+  border-top-color: #D2352C;
+}
+
+.uataq-head a:link,
+.uataq-head a:visited, 
+.uataq-head a:hover, 
+.uataq-head a:active {
+  color: rgb(68, 68, 68);
+}
+
+img[src^="http://home.chpc.utah.edu/~bfasoli/uinta_tanks/"] {
+  max-width: 33%;
+}
+
+iframe {
+border: none;
+width: 100%;
+margin: 0;
+padding: 0;
+display:block;
+}

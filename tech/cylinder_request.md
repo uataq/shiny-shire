@@ -1,6 +1,0 @@
-- An online form must be submitted with your request and mole fraction per tank request.
-- CO2 tanks can be filled and calibrated in the range of 300 to 800 ppm.
-- The number of cylinders requested must be equivalent to those returned empty.
-- The target CO2 is usually within 5 umol/mol near ambient concentration. Values will vary at either end of the range as well as with the addition of another gas like methane.
-- Turnaround time for CO2 cylinder fills and calibration is 4 to 6 weeks. Cylinders with CO2 and CH4 may require additional time for filling and calibration. Please consider this lead-time when making request for tank fills.
-- Questions can be sent to [Maria Garcia](mailto:mag10@utah.edu).
