@@ -73,10 +73,28 @@ output$tank_add_ui <- renderUI({
   if (grepl('a', auth$level)){
     tagList(
       p('Add a new editable tank to the master list.'),
-      textInput('tank_add_num', h5('Tank Number')),
+      textInput('tank_add_num', 'Tank Number'),
       actionButton('tank_add_save', 'Add new tank'))
   } else{
     p('Sorry, but you don\'t have permissions to do this.')
+  }
+})
+
+# UI - Rename ------------------------------------------------------------------
+output$tank_rename_ui <- renderUI({
+  if (grepl('a', auth$level)){
+    tanks <- get_tanks()
+    serials <- lapply(tanks, function(x){ tail(x$Serial, 1) }) %>%
+      unlist()
+    names(serials) <- NULL
+    tagList(
+      p('Change the tank identifier. Warning: this cannot be undone.'),
+      selectInput('tank_rename_serial', 'Tank serial number',
+                  c('', serials)),
+      textInput('tank_rename_num', 'New tank identification number', 
+                placeholder='e.g. M23'),
+      actionButton('tank_rename_trigger', 'Rename tank')
+    )
   }
 })
 
@@ -188,6 +206,17 @@ observeEvent(input$tank_add_save, {
   updateTextInput(session, 'tank_add_num', value='')
 })
 
+# Event - Rename tank ----------------------------------------------------------
+observeEvent(input$tank_rename_trigger, {
+  tanks <- get_tanks()
+  serials <- lapply(tanks, function(x){ tail(x$Serial, 1) })
+  names(tanks)[serials == input$tank_rename_serial] <- input$tank_rename_num
+  
+  isolate(tt$refresh <- FALSE)
+  saveRDS(tanks, format(Sys.time(), 'src/tanks/%y%m%d_%H%M_tankdata.rds'))
+  isolate(tt$refresh <- TRUE)
+})
+
 # Event - Edit tank database ---------------------------------------------------
 observeEvent(input$tank_save, {
   Tank <- input$tank_num
@@ -289,8 +318,6 @@ output$dt_tank <- DT::renderDataTable(server=F, rownames=F, style='bootstrap',
       mutate(Num = names(tanks))
     o <- order(tbl_dat$Num)
     dt <- tbl_dat[o, ]
-    rownames(dt) <- tbl_dat$Num
-    dt$Num <- NULL
   }
   dt %>%
     mutate(Time = format(Time, tz='America/Denver', format='%Y-%m-%d %H:%M %Z'))
