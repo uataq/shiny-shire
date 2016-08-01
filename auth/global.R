@@ -2,6 +2,7 @@
 library(dplyr)
 library(DT)
 library(digest)
+library(ggplot2)
 library(shiny)
 library(shinydashboard)
 library(shinyBS)
