@@ -2,9 +2,9 @@
 setwd('/srv/shiny-server/map/')
 
 # - GLOBAL -
-other_sites <- data_frame(site=c('haw', 'snb', 'wnd'),
-                          lat=c(40.734361, 40.560644, 39.9018),
-                          lon=c(-111.872139, -111.645278, -113.7181))
+other_sites <- data_frame(site=c('haw', 'wnd'),
+                          lat=c(40.734361, 39.9018),
+                          lon=c(-111.872139, -113.7181))
 
 pretty_site_names <- data_frame(csp='Castle Peak',
                                 dbk='Daybreak',
@@ -14,6 +14,7 @@ pretty_site_names <- data_frame(csp='Castle Peak',
                                 lgn='Logan',
                                 roo='Roosevelt',
                                 rpk='Rose Park',
+                                sno='Snowbird',
                                 sug='Sugarhouse',
                                 sun='Suncrest', 
                                 trx01='TRAX 1',
@@ -21,7 +22,6 @@ pretty_site_names <- data_frame(csp='Castle Peak',
                                 wbb='University of Utah',
                                 
                                 haw='Hawthorne (DAQ)',
-                                snb='Snowbird (RACCOON)',
                                 wnd='Wendover')
 
 url_link <- data_frame(csp='http://air.utah.edu/s/view/gasview/?site=',
@@ -32,6 +32,7 @@ url_link <- data_frame(csp='http://air.utah.edu/s/view/gasview/?site=',
                        lgn=csp,
                        roo=csp,
                        rpk=csp,
+                       sno=csp,
                        sug=csp,
                        sun=csp,
                        trx01='http://air.utah.edu/s/view/trax/',
@@ -39,8 +40,7 @@ url_link <- data_frame(csp='http://air.utah.edu/s/view/gasview/?site=',
                        wbb=csp,
                        
                        haw='http://air.utah.gov/currentconditions.php?id=slc',
-                       snb='http://www.eol.ucar.edu/homes/stephens/RACCOON/',
-                       wnd=snb)
+                       wnd='http://www.eol.ucar.edu/homes/stephens/RACCOON/')
 
 min_max <- data_frame('Carbon Dioxide (CO2)'=c(400, 550),
                'Methane (CH4)'=c(1.9, 2.5),
