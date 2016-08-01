@@ -47,7 +47,7 @@ proc <- function(zipfile, reader, calibrate)
   # Extract desired columns from each dataset and merge into a single
   # dataframe with a shared timestamp 'Time_common'. Measurements are then
   # linearly interpolated over time to fill in the dataframe.
-  geo <- rbind_list(
+  geo <- bind_rows(
     data_frame(Time_common=NA, lat=NA, lon=NA, CO2d_ppm=NA, 
                CH4d_ppm=NA, CO_ppm=NA, NOx=NA, O3_ppbv=NA,
                pm25=NA),
@@ -171,7 +171,10 @@ reader$garmin <- function(path='UATAQ_Nerdmobile/raw/garmin.dat')
   # Garmin GPS
   if(!file.exists(path)) return(NULL)
   raw <- scan(path, what=character(), sep='\n', skipNul=T)
-  gpgga <- grep('$GPGGA', raw, fixed=T, value=T)
+  gpgga <- grep('$GPGGA', raw, fixed=T, value=T) %>%
+    iconv('latin1', 'ASCII', sub='')
+  ndelim <- as.integer(lapply(gpgga, function(x){length(gregexpr(',', x)[[1]])}))
+  gpgga <- gpgga[ndelim == 15]
   gpgga <- matrix(data=unlist(strsplit(gpgga, ',', fixed=T)), ncol=16, byrow=T)
   data <- data.frame(Time_common = as.POSIXct(gpgga[ ,1], tz='UTC'),
                      lat = as.numeric(gpgga[ ,4]),
