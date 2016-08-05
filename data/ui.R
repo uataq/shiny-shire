@@ -1,4 +1,5 @@
 # Ben Fasoli
+source('global.R')
 
 # Header Layout ---------------------------------------------------------------
 header <- dashboardHeader(title=div(a(img(src='utelogo.png', height=19), 'ATAQ Lab',
@@ -12,12 +13,12 @@ sidebar <- dashboardSidebar(disable=T)
 
 # Body Layout -----------------------------------------------------------------
 body <- dashboardBody(
-  bsModal('key_window', 'Enter access key', 'open_changepass_window',
+  useShinyjs(),
+  bsModal('key_window', 'Enter access token', 'open_key_window',
           HTML('<div class="input-group">',
                '<span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>',
-               '<input class="form-control shiny-bound-input" id="userkey" type="text" placeholder="1a79a4d60de6718e8e5b326e338ae533">',
-               '</div>'),
-          bsAlert('key_alert')
+               '<input class="form-control shiny-bound-input" id="token" type="text" placeholder="1a79a4d60de6718e8e5b326e338ae533">',
+               '</div>')
   ),
   
   tags$head(includeCSS('www/styles.css')),

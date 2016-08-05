@@ -42,16 +42,22 @@ output$sidebar_auth <- renderMenu({
         menuItem('Request Tank', icon=icon('envelope'), tabName='request_tank'),
         menuItem('Download Tank Data', icon=icon('download'), tabName='tank_download')))
     }
-    if (grepl('d', auth$level)) {
-      menuitems <- c(menuitems, list(
-        menuItem('Download UATAQ Measurements', icon=icon('download'),
-                 tabName='data_download')))
-    }
+    # if (grepl('d', auth$level)) {
+    #   menuitems <- c(menuitems, list(
+    #     menuItem('Download UATAQ Measurements', icon=icon('download'),
+    #              href = paste0('http://air.utah.edu/s/data/?token=', digest(auth$name)))))
+    # }
     # if (grepl('s', auth$level)) {
     #   menuitems <- c(menuitems, list(
     #     menuItem('Site Access', icon=icon('location-arrow'),
     #              tabName='site_access')))
     # }
+    
+    menuitems <- c(menuitems, list(
+      br(),
+      menuItem('Download Measurements', icon=icon('download'),
+               href = paste0('http://air.utah.edu/s/data/?token=', 
+                             digest(auth$name)))))
     
     menuitems <- c(menuitems, list(
       br(), br(),

@@ -5,7 +5,7 @@ max_obs <- 100000
 network <- function(site) {
   if (is.null(site)) {
     return(NULL)
-  } else if (site %in% c('csp', 'fru', 'hpl', 'roo', 'wbb')) {
+  } else if (site %in% c('csp', 'hdp', 'fru', 'hpl', 'roo', 'wbb')) {
     return('ch4')
   } else if (site %in% c('dbk', 'heb', 'lgn', 'rpk', 'sug', 'sun')) {
     return('co2')
@@ -173,11 +173,11 @@ function(input, output, session) {
 
 # DEBUG
 # input <- list(
-#   site='sun',
-#   dataset='Instrument diagnostics',
+#   site='sno',
+#   dataset='Calibrated dataset',
 #   data='CO2d_ppm',
 #   date_range = c(Sys.Date()-7, Sys.Date())
 #   # date_range = c(as.Date('2016-01-01'), as.Date('2016-03-31'))
 # )
 # r <- list(site=input$site)
-# network <- function() {'co2'}
+# network <- function() {'ch4'}

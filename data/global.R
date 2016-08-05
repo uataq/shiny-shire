@@ -1,10 +1,12 @@
-
+library(digest)
 library(dplyr)
 library(DT)
-library(ggplot2)
 library(shiny)
-library(shinydashboard)
 library(shinyBS)
+library(shinydashboard)
+library(shinyjs)
+library(readr)
+
 
 data_opts <- dir('/projects/backups/smaug/measurements/data/')
 loc_opts <- c('asb', 'cpk', 'dbk', 'fru', 'hdp', 'heb', 'hpl', 'lgn', 'mur',

@@ -11,7 +11,7 @@ sidebar <- dashboardSidebar(
     menuItem('TRAX Data', href='http://air.utah.edu/s/trax/', newtab=F, icon=icon('train')),
     div(align='center',
         selectInput('site', 'Site', 
-                    c('', grep('trx', substr(dir('/home/benfasoli/github/lair-proc/run/'), 1, 3),
+                    c('', grep('trx', substr(dir('/projects/data/'), 1, 3),
                                value=T, invert=T))),
         conditionalPanel('input.site != ""',
                          dateRangeInput('date_range', 'Date range',

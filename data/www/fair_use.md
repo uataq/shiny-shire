@@ -1,6 +1,7 @@
-FAIR USE? All researchers using this data must inform us of how you plan on using this data and of any publication plans. If we feel that we should be acknowledged or offered participation as co-authors we will let you know and we assume that an agreement on such matters will be reached prior to writing a manuscript and/or publishing the data.  If your work directly competes with (a) our analysis or (b) a collaborative study from a colleague who has already approached us about using the data we ask that we or our collaborators have the opportunity to submit a manuscript before you submit one that uses our data.
-
+#### Fair Use Agreement
 It is inappropriate for individuals or organizations to host our data on their website sites or servers without prior written permission. Please respect this requirement.
+
+All researchers using this data must inform us of how you plan on using this data and of any publication plans. If we feel that we should be acknowledged or offered participation as co-authors we will let you know and we assume that an agreement on such matters will be reached prior to writing a manuscript and/or publishing the data.  If your work directly competes with (a) our analysis or (b) a collaborative study from a colleague who has already approached us about using the data we ask that we or our collaborators have the opportunity to submit a manuscript before you submit one that uses our data.
 
 Every effort is made to produce the most accurate and precise measurements possible.  However we reserve the right to make corrections to the data based on recalibration of standard gases or for other reasons deemed scientifically justified. We are not responsible for results and conclusions based on use of these data without regard to this warning.
 
