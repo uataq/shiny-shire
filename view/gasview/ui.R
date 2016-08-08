@@ -8,7 +8,7 @@ header <- dashboardHeader(title=div(img(src='utelogo.png', height=19), 'ATAQ Lab
 sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem('UATAQ Homepage', href='http://air.utah.edu/', newtab=F, icon=icon('home')),
-    menuItem('TRAX Data', href='http://air.utah.edu/s/trax/', newtab=F, icon=icon('train')),
+    menuItem('TRAX Data', href='http://air.utah.edu/s/view/trax/', newtab=F, icon=icon('train')),
     div(align='center',
         selectInput('site', 'Site', 
                     c('', grep('trx', substr(dir('/projects/data/'), 1, 3),
