@@ -127,9 +127,8 @@ output$ts_note <- renderPlot({
 })
 
 # UI - Datatable of notes ------------------------------------------------------
-output$dt_note <- DT::renderDataTable(server=F, rownames=F, style='bootstrap', 
-                                      options=list(responsive=T),
-                                      extensions=c('responsive'), {
+output$dt_note <- DT::renderDataTable(server=F, rownames=F,
+                                      extensions=c('Responsive'), {
   notes <- get_notes()
   if(input$note_site %in% names(notes)){
     dt <- notes[[input$note_site]]

@@ -298,9 +298,10 @@ observeEvent(input$tank_emptybutton, {
 })
 
 # UI - Datatable of tanks ------------------------------------------------------
-output$dt_tank <- DT::renderDataTable(server=F, rownames=F, style='bootstrap', 
-                                      options=list(responsive=T),
-                                      extensions=c('responsive'), {
+output$dt_tank <- DT::renderDataTable(server=F, rownames=F,
+                                      # options=list(responsive=T),
+                                      extensions=c('Responsive'),
+                                      {
   if(input$tank_function=='View') tank <- input$tank_num_view
   else if(input$tank_function=='Remove') tank <- input$tank_num_remove
   else if(input$tank_function=='Edit') tank <- input$tank_num
@@ -345,7 +346,6 @@ output$download_trigger <- downloadHandler(
 )
 
 # Submit tank request ----------------------------------------------------------
-
 observeEvent(input$request_save, {
   name <- input$request_name
   date <- input$request_date

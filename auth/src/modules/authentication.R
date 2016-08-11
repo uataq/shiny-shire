@@ -27,6 +27,9 @@ output$sidebar_auth <- renderMenu({
     menuitems <- c(menuitems, list(
       menuItem('Sign in', tabName='signin', icon = icon('lock'), selected=T)))
   } else {
+    # menuitems <- c(menuitems, list(
+    #   menuItem('Site Diagnostics', tabName='site_diagnostics', icon = icon('cloud'))
+    # ))
     if (grepl('b', auth$level)) {
       # Basic technician level, rw field form and r tank tracker
       menuitems <- c(menuitems, list(

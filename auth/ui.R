@@ -66,6 +66,15 @@ body <- dashboardBody(
                  'or contact', a('Ben Fasoli', href='mailto:b.fasoli@utah.edu'),
                  'for access.')),
     
+    # Site diagnostics ---------------------------------------------------------
+    # tabItem('site_diagnostics', 
+    #         fluidRow(
+    #           column(12,
+    #                  tags$iframe(src='http://air.utah.edu/dash/',
+    #                  style = 'height: 100%;'))
+    #           )
+    # ),
+    
     # Field Form ---------------------------------------------------------------
     tabItem('field_form',
             fluidRow(
