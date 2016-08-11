@@ -17,8 +17,8 @@ get_data <- function(sites, t_start, t_end, variables) {
                     unique %>%
                     file.path(base, .)
                   col_types <- switch(network(site),
-                                      'co2' = 'Tddddidc',
-                                      'ch4' = 'Tddddiddddic')
+                                      'co2' = 'Tddddiddc',
+                                      'ch4' = 'Tddddidddddidc')
                   tmp <- file.path('/projects/data', site, 'calibrated') %>%
                     dir(full.names = T, pattern = '.*\\.dat') %>%
                     intersect(files) %>%
@@ -49,7 +49,7 @@ get_data <- function(sites, t_start, t_end, variables) {
 # Server initialization --------------------------------------------------------
 function(input, output, session) {
   valid <- readr::read_csv(tail(dir('user_auth', full.names=T), 1))
-  
+
   auth <- reactiveValues(agree    = F,
                          logged   = F,
                          token    = NA,
@@ -58,16 +58,16 @@ function(input, output, session) {
                          t_end    = NA,
                          sites    = list(NA),
                          btn_cnt  = 0)
-  
+
   # URL query ------------------------------------------------------------------
   observe({
     q <- parseQueryString(isolate(session$clientData$url_search))
-    if ('token' %in% names(q)) 
+    if ('token' %in% names(q))
       auth$token <- q['token']
     if ('agree' %in% names(q))
       auth$agree <- T
   })
-  
+
   # Validate login credentials -------------------------------------------------
   observe({
     # auth$token <- digest::digest('benfasoli')
@@ -75,9 +75,9 @@ function(input, output, session) {
     if (!auth$agree) return()
     if (!is.null(input$token) && nchar(input$token) == 32)
       auth$token <- input$token
-    
+
     idx <- match(auth$token, sapply(valid$name, digest))
-    
+
     if (!is.na(idx)) {
       toggleModal(session, 'key_window', toggle = 'hide')
       auth_info    <- valid[idx, ]
@@ -90,25 +90,25 @@ function(input, output, session) {
       info('Login error. Check for valid token.')
     }
   })
-  
+
   # Body UI --------------------------------------------------------------------
   observeEvent(input$agree, auth$agree <- T)
   observe({
     if (!is.null(input$agree) && input$agree && is.na(auth$token))
       toggleModal(session, 'key_window', 'show')
   })
-  
+
   output$dash <- renderUI({
     if (!auth$logged) {
       column(12,
              box(width=NULL, status='danger', solidHeader=F,
                  includeMarkdown('www/fair_use.md'),
-                 bsButton('agree', 'I agree', icon=icon('check'), 
+                 bsButton('agree', 'I agree', icon=icon('check'),
                           block=T, style='danger')
              )
       )
     } else {
-      
+
       # Manipulate user authentication options
       opts_sites <- auth$sites
       if (!is.na(auth$sites)) {
@@ -117,12 +117,12 @@ function(input, output, session) {
           unlist()
       } else {
         opts_sites <- '/projects/data' %>%
-          dir() %>% 
+          dir() %>%
           grep(x = ., pattern = 'trx', value = T, invert = T)
       }
       opts_t_start <- auth$t_start
       opts_t_end <- auth$t_end
-      
+
       fluidRow(
         column(8, offset = 2,
                box(title='Choose data',
@@ -134,28 +134,28 @@ function(input, output, session) {
                    ),
                    hr(),
                    fluidRow(
-                     column(6, 
+                     column(6,
                             dateInput('t_start', 'Start date', width='100%',
                                       value=opts_t_start, min=opts_t_start)),
-                     column(6, 
+                     column(6,
                             dateInput('t_end', 'End date', width='100%',
                                       value=opts_t_start, max=opts_t_end))
                    ),
-                   selectInput('sites', 'Site identifiers', width = '100%', 
+                   selectInput('sites', 'Site identifiers', width = '100%',
                                choices=c('Choose site(s)' = '', opts_sites),
                                multiple=T),
                    selectInput('variables', 'Variables', width = '100%',
-                               choices = c('Choose variable(s)' = '', 
-                                           'CO2d_ppm_cal', 'CO2d_ppm_raw', 
-                                           'm_co2', 'b_co2', 'n_co2', 'CH4d_ppm_cal', 
-                                           'CH4d_ppm_raw', 'm_ch4', 'b_ch4', 'n_ch4'), 
+                               choices = c('Choose variable(s)' = '',
+                                           'CO2d_ppm_cal', 'CO2d_ppm_raw',
+                                           'm_co2', 'b_co2', 'n_co2', 'CH4d_ppm_cal',
+                                           'CH4d_ppm_raw', 'm_ch4', 'b_ch4', 'n_ch4'),
                                multiple = T),
                    tags$a(id = 'btn', class = 'btn btn-default btn-block shiny-download-link disabled',
                           href = '', target = '_blank', icon('download'), 'Download')
                )
         )#,
-        
-        # column(7, 
+
+        # column(7,
         #        box(title='Example data structure', width=NULL, solidHeader=T,
         #            # DT::renderDataTable('table')
         #            'hi'
@@ -163,20 +163,20 @@ function(input, output, session) {
       )
     }
   })
-  
+
   # Enable or disable example button -------------------------------------------
   observe({
     cond <- !is.null(input$sites) &&
       nchar(input$sites) > 1 &&
       !is.null(input$variables) &&
       nchar(input$variables > 1)
-    
+
     # Classes when button enabled
     toggleClass('btn', 'btn-danger', cond)
     # Classes when button disabled
     toggleClass('btn', 'btn-default disabled', !cond)
   })
-  
+
   # Download handler -----------------------------------------------------------
   output$btn <- downloadHandler(
     contentType = 'text/csv',
