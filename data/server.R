@@ -78,15 +78,15 @@ function(input, output, session) {
 
     idx <- match(auth$token, sapply(valid$name, digest))
 
-    if (!is.na(idx)) {
+    if (!is.na(idx[1])) {
       toggleModal(session, 'key_window', toggle = 'hide')
-      auth_info    <- valid[idx, ]
+      auth_info    <- valid[idx[1], ]
       auth$logged  <- T
       auth$name    <- auth_info$name
       auth$t_start <- auth_info$t_start
       auth$t_end   <- auth_info$t_end
       auth$sites   <- auth_info$sites
-    } else if (nchar(auth$token) == 32) {
+    } else if (!is.na(auth$token) && nchar(auth$token) == 32) {
       info('Login error. Check for valid token.')
     }
   })
