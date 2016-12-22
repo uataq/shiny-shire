@@ -80,8 +80,7 @@ map <- function(input, output, session, data, tab) {
     breaks_lgnd <- seq(minmax[1], minmax[2], length.out=10)
     
     leaf %>%
-      addLegend('bottomright', pal=cpal, values=breaks_lgnd,
-                labFormat=labelFormat(transform=function(x){-x}), opacity=0.7)
+      addLegend('bottomright', pal=cpal, values=breaks_lgnd, opacity=0.7)
   })
   
   output$ts <- renderDygraph({

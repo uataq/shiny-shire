@@ -17,7 +17,7 @@ sidebar <- dashboardSidebar(
     menuItem('UATAQ Homepage', href='http://air.utah.edu/', newtab=F, icon=icon('home')),
     menuItem('Data Processing', tabName='Nerdmobile', icon=icon('car'), selected=T),
     menuItem('R Source Code', newtab=F, icon=icon('code'),
-             href='https://github.com/benfasoli/shiny-shire/tree/master/nerdmobile')
+             href='https://github.com/benfasoli/shiny-shire/blob/master/view/nerdmobile/src.R')
   )
 )
 
