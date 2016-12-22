@@ -1,0 +1,31 @@
+.content-wrapper {
+  background-color: #eaeaea;
+}
+
+.nav-tabs-custom .nav-tabs li.active {
+  border-top-color: #D2352C;
+} 
+
+div.tab-content div.tab-pane{
+  position: relative;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+div.map-control {
+  position: absolute;
+  bottom: 10px;
+  left: 15px;
+}
+
+div.time-display {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+}
+
+.btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited {
+  color: white !important;
+  background-color: #d03732 !important;
+  border: 0;
+}
