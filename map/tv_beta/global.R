@@ -15,24 +15,27 @@ opts <- data_frame(
 mod_map_ui <- function(id) {
   ns <- NS(id)
   tagList(
+    tags$script(HTML(
+      'CO2d_ppm-map.doubleClickZoom.disable()'
+    )),
     leafletOutput(ns('map'), height=420),
     div(class='time-display',
         textOutput(ns('last_time'))),
     div(class='map-control',
         actionButton(ns('goto_all'), 'All Sites', icon=icon('expand'), width=150,
                      class='btn btn-primary'),
-        div(style='line-height: 25%;', br()),
+        div(br()),
         actionButton(ns('goto_slc'), 'Salt Lake City', icon=icon('search'), width=150,
                      class='btn btn-primary'),
-        div(style='line-height: 120%;', br()),
+        # div(br()),
         img(src='SCIF_logo.png', width=150, align='middle'))#,
   )
 }
 
 # Modular Server ---------------------------------------------------------------
-mod_map_srv <- function(input, output, session, tab) {
+mod_map_srv <- function(input, output, session, tab, rdsfile) {
   df <- reactiveFileReader(30000, session, 
-                           '/srv/shiny-server/map/shared/airmap.rds',
+                           rdsfile,
                            readRDS)
   
   observeEvent(input$goto_slc, {
@@ -56,8 +59,10 @@ mod_map_srv <- function(input, output, session, tab) {
     
     # Split data into fixed (f) and mobile (m) data frames that will be mapped
     # differently due to the spatial density of points.
-    f <- na.omit(data$fixed[ ,c('Time_UTC', 'lat', 'lon', 'site', tab)])
-    m <- na.omit(data$mobile[ ,c('Time_UTC', 'lat', 'lon', 'site', tab)])
+    f <- na.omit(data$fixed[ ,c('Time_UTC', 'lat', 'lon', 'site', tab)]) %>%
+      filter(Time_UTC > Sys.time() - 5400)
+    m <- na.omit(data$mobile[ ,c('Time_UTC', 'lat', 'lon', 'site', tab)]) %>%
+      filter(Time_UTC > Sys.time() - 5400)
     
     # Define point colors
     minmax <- switch(tab,
@@ -79,7 +84,7 @@ mod_map_srv <- function(input, output, session, tab) {
       mask <- m$site == site
       if (nrow(m[mask, ]) > 300){
         temp <- m[mask, ]
-        smoothby <- 30
+        smoothby <- 40
         temp[ ,tab] <- ivis::runSmooth(temp[ ,tab], n=smoothby)
         m <- temp[seq(1, nrow(temp), by=smoothby), ]
       } else m <- m[mask, ]
