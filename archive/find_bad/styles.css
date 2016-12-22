@@ -1,0 +1,11 @@
+.content-wrapper, .right-side {
+  background-color: #eaeaea;
+}
+
+.nav-tabs-custom .nav-tabs li.active {
+  border-top-color: #D2352C;
+} 
+
+.recalculating {
+  opacity: 0.2;
+}
