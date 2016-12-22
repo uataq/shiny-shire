@@ -1,15 +1,16 @@
 # Ben Fasoli
 source('global.R')
 
+rdsfile <- '/home/benfasoli/cron/air.utah.edu/data/airmap.rds'
 function(input, output, session) {
   
   # Get data -------------------------------------------------------------------
   df <- reactiveFileReader(30000, session, 
-                           '/srv/shiny-server/map/shared/airmap.rds',
+                           rdsfile,
                            readRDS)
   
   df_wbb <- reactiveFileReader(30000, session, 
-                               '/srv/shiny-server/map/shared/airmap.rds',
+                               rdsfile,
                                function(x) {
                                  readRDS(x)$fixed %>%
                                    filter(grepl('wbb', site))
@@ -143,5 +144,5 @@ function(input, output, session) {
 
   # Map tabs use shiny modules to define the map UI
   for (tracer in opts$short)
-    callModule(mod_map_srv, tracer, tab=input$tab)
+    callModule(mod_map_srv, tracer, tab=input$tab, rdsfile = rdsfile)
 }

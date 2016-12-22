@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------------
 # WBB FILL IN SPIKE CALCULATOR
 output$tankspike_ambient_wbb <- renderUI({
-  wbb_file <- '/srv/shiny-server/map/shared/airmap.rds'
+  wbb_file <- '/home/benfasoli/cron/air.utah.edu/data/airmap.rds'
   wbb <- tail(subset(readRDS(wbb_file)$fixed, site=='wbb'), 1)
   if((Sys.time() - wbb$Time) < 60 * 60){
     textInput('tankspike_ambient', 
