@@ -50,7 +50,7 @@ function(input, output, session) {
                                        'GasP_torr', 'GasP_torr_sd',
                                        'GasT_C', 'GasT_C_sd',
                                        'AmbT_C', 'AmbT_C_sd'),
-                  'CH4d_ppm')
+                  'CO2_ppm')
     } else if (network(input$site) == 'co2') {
       selectInput('data', 'Display', c('batt_volt', 'PTemp', 'Room_T',
                                        'IRGA_T', 'IRGA_P',
