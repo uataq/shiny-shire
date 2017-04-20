@@ -37,7 +37,7 @@ proc <- function(zipfile, reader, calibrate)
   # implemented here down the road.
   d <- raw
   if ('calflag' %in% names(d$lgr)) {
-    d$lgr        <- subset(d$lgr,        calflag == 1)
+    d$lgr        <- subset(d$lgr, calflag == 1)
   }
   if ('calflag' %in% names(d$picarro_co)) {
     d$picarro_co <- subset(d$picarro_co, calflag == 1)
@@ -70,10 +70,11 @@ proc <- function(zipfile, reader, calibrate)
               NOx = mean(NOx, na.rm=T),
               O3_ppbv = mean(O3_ppbv, na.rm=T))
   
-  geo.interp <- cbind(Time_common = geo_s$Time_common,
+  geo_interp <- cbind(Time_common = geo_s$Time_common,
                       as_data_frame(
                         lapply(geo_s[-1], na_interp, x=geo_s$Time_common)))
-  return(geo.interp)
+
+  return(geo_interp)
 }
 
 
@@ -98,6 +99,7 @@ reader$lgr <- function(path='UATAQ_Nerdmobile/raw/lgr.dat')
   if(nrow(data) < 1) return(NULL)
   
   data$Time_common <- as.POSIXct(data$Time_common, tz='UTC')
+  data$Time_common <- data$Time_common - 15 # Correction for optical cavity turnover
   return(data)
 }
 reader$nox2b <- function(path='UATAQ_Nerdmobile/raw/nox.dat')
@@ -113,7 +115,7 @@ reader$nox2b <- function(path='UATAQ_Nerdmobile/raw/nox.dat')
   raw  <- grep('Temp', raw, invert=T, fixed=T, value=T)
   data <- read.table(textConnection(raw), sep=',', skipNul=T, 
                      stringsAsFactors=F, col.names=header)
-  str(data)
+  
   mask <- substr(data[ ,1], 1, 2) == '20'
   data <- data[mask, ]
   if(nrow(data) < 1) return(NULL)
@@ -183,7 +185,7 @@ reader$garmin <- function(path='UATAQ_Nerdmobile/raw/garmin.dat')
   data$lat <- with(data, floor(lat/100)+(lat-floor(lat/100)*100)/60)
   data$lon <- with(data, -(floor(lon/100)+(lon-floor(lon/100)*100)/60))
   data$whichnmea <- 1
-  return(data)
+  return(data %>% na.omit())
 }
 reader$grimm <- function(path='UATAQ_Nerdmobile/raw/grimm.dat')
 {

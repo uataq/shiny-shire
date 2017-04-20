@@ -15,12 +15,12 @@ server <- function(input, output) {
   
   output$leaf <- renderLeaflet({
     show <- input$show
-    df <- readRDS('/projects/archive/urop_airmet/dat1.rds') %>%
+    df <- readRDS('/projects/archive/urop_airmet/data/test_1/dat1.rds') %>%
       .[ ,c(show, 'lat', 'lon')]
     
     interp <- as_data_frame(lapply(df, na_interp)) %>%
-      na.omit() %>%
-      .[c(1000:3600, 10000:44600), ]
+      na.omit() #%>%
+      # .[c(1000:3600, 10000:44600), ]
     
     interp <- interp[interp$lon < -111.818 & interp$lon > -112, ]
     

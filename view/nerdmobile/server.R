@@ -1,4 +1,3 @@
-# UNIVERSITY OF UTAH AIR QUALITY AND TRACE GAS LAB
 # Nerdmobile processing app
 # Ben Fasoli 
 
@@ -15,7 +14,7 @@ make_figs <- function(geo) {
   require(ivis)
   require(leaflet)
   tracers <- grep('Time_common|lat|lon', names(geo), value=T, invert=T)
-  lapply(tracers, function(tracer, geo){
+  lapply(tracers, geo, FUN = function(tracer, geo){
     
     xt <- na.omit(geo[c(tracer, 'Time_common')])
     xt <- xts(xt[tracer], xt$Time_common)
@@ -27,42 +26,51 @@ make_figs <- function(geo) {
       dyRangeSelector(height=30, strokeColor='')
     saveWidget(ts, file=paste0(getwd(), '/UATAQ_Nerdmobile/plots/', tracer, '_map.html'),
                libdir=paste0(getwd(), '/UATAQ_Nerdmobile/plots/dependencies/'), selfcontained=F)
+    
+    saveRDS(geo, '~/test.rds')
     if(nrow(geo) > 2000){
       n <- floor(nrow(geo) / 2000)
-      geo[tracer] <- stats::filter(geo[tracer], rep(1/n, n), sides = 2)
+      geo[tracer] <- stats::filter(geo[tracer], rep(1/n, n), sides = 2) %>%
+        as.numeric()
       geo <- geo[seq(1, nrow(geo), by=n), ]
     }
-    geo.map <- geo[c('Time_common', 'lat', 'lon', tracer)]
-    geo.map <- na.omit(geo.map)
     
-    #     minmax <- switch(tracer,
-    #                      'CO2d_ppm' = c(400, 550),
-    #                      'CH4d_ppm' = c(1.9, 2.5),
-    #                      'CO_ppm'   = c(0, 5),
-    #                      'O3_ppbv'  = c(0, 50),
-    #                      'NOx'      = c(0, 100),
-    #                      'PM2.5'    = c(0, 55))
-    minmax <- c(min(geo.map[tracer]), max(geo.map[tracer]))
+    geo_map <- geo[c('Time_common', 'lat', 'lon', tracer)]
+    geo_map <- na.omit(geo_map)
     
-    cols <- geo.map[ , tracer]
+    lati_grid <- seq(-90, 90, by = 0.0005)
+    long_grid <- seq(-180, 180, by = 0.0005)
+    
+    geo_map <- geo_map %>%
+      arrange(Time_common) %>%
+      mutate(lati_idx = find_neighbor(lat, lati_grid),
+             long_idx = find_neighbor(lon, long_grid)) %>%
+      group_by(lati_idx, long_idx) %>%
+      summarize_all(funs(mean(., na.rm = T))) %>%
+      ungroup() %>%
+      select(-lati_idx, -long_idx)
+    
+    minmax <- c(min(geo_map[tracer]), max(geo_map[tracer]))
+    
+    cols <- geo_map[ , tracer]
     cols[cols < minmax[1]] <- minmax[1]
     cols[cols > minmax[2]] <- minmax[2]
     cpal <- colorNumeric(c('blue', 'cyan', 'green', 'yellow', 'orange', 'red'),
                          seq(minmax[1], minmax[2], length.out=64))
     pop <- paste(sep='<br>',
-                 paste(tracer, ':<b>', round(geo.map[[tracer]], 2), '</b>'),
-                 paste('Time:  ', format(geo.map$Time_common, tz='America/Denver', '%Y-%m-%d %H:%M %Z')))
+                 paste(tracer, ':<b>', round(geo_map[[tracer]], 2), '</b>'),
+                 paste('Time:  ', format(geo_map$Time_common, tz='America/Denver', '%Y-%m-%d %H:%M %Z')))
     l <- leaflet() %>% 
       addTiles(urlTemplate='http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png') %>%
-      fitBounds(lng1=max(geo.map$lon)+0.01, lat1=min(geo.map$lat)-0.01, 
-                lng2=min(geo.map$lon)-0.01, lat2=max(geo.map$lat)+0.01) %>%
-      addCircles(lng=geo.map$lon, lat=geo.map$lat, radius=30, popup=pop, stroke=T, weight=2,
+      fitBounds(lng1=max(geo_map$lon)+0.01, lat1=min(geo_map$lat)-0.01, 
+                lng2=min(geo_map$lon)-0.01, lat2=max(geo_map$lat)+0.01) %>%
+      addCircles(lng=geo_map$lon, lat=geo_map$lat, radius=30, popup=pop, stroke=T, weight=2,
                  fillColor=cpal(cols), color=cpal(cols), 
                  opacity=0.3, fillOpacity=0.3)
     saveWidget(l, file=paste0(getwd(), '/UATAQ_Nerdmobile/maps/', tracer, '_map.html'),
                libdir=paste0(getwd(), '/UATAQ_Nerdmobile/maps/dependencies/'), selfcontained=F)
     return(l)
-  }, geo)
+  })
 }
 
 # Server ----------------------------------------------------------------------
@@ -156,26 +164,24 @@ function(input, output, session) {
       validate(need(tracer %in% names(geo), paste('No', tracer, 'data found.')))
       validate(need('lat' %in% names(geo), paste('No GPS data found.')))
       
-      if(nrow(geo) > 2000){
-        n <- floor(nrow(geo) / 2000)
-        geo[tracer] <- stats::filter(geo[ ,tracer], rep(1/n, n), sides = 2)
-        geo <- geo[seq(1, nrow(geo), by=n), ]
-      }
-      geo.map <- geo[c('Time_common', 'lat', 'lon', tracer)]
-      saveRDS(geo.map, '~/test.rds')
-      geo.map <- na.omit(geo.map)
+      geo_map <- geo[c('Time_common', 'lat', 'lon', tracer)]
+      geo_map <- na.omit(geo_map)
       
+      lati_grid <- seq(-90, 90, by = 0.0005)
+      long_grid <- seq(-180, 180, by = 0.0005)
       
-      # minmax <- switch(tracer,
-      #                  'CO2d_ppm' = c(400, 550),
-      #                  'CH4d_ppm' = c(1.9, 2.5),
-      #                  'CO_ppm'   = c(0, 1),
-      #                  'O3_ppbv'  = c(0, 50),
-      #                  'NOx'      = c(0, 100),
-      #                  'PM2.5'    = c(0, 55))
-      minmax <- c(min(geo.map[tracer]), max(geo.map[tracer]))
+      geo_map <- geo_map %>%
+        arrange(Time_common) %>%
+        mutate(lati_idx = find_neighbor(lat, lati_grid),
+               long_idx = find_neighbor(lon, long_grid)) %>%
+        group_by(lati_idx, long_idx) %>%
+        summarize_all(funs(mean(., na.rm = T))) %>%
+        ungroup() %>%
+        select(-lati_idx, -long_idx)
       
-      cols <- geo.map[ , tracer]
+      minmax <- c(min(geo_map[tracer]), max(geo_map[tracer]))
+      
+      cols <- geo_map[[tracer]]
       cols[cols < minmax[1]] <- minmax[1]
       cols[cols > minmax[2]] <- minmax[2]
       
@@ -183,14 +189,14 @@ function(input, output, session) {
                            seq(minmax[1], minmax[2], length.out=64))
       
       pop <- paste(sep='<br>',
-                   paste(tracer, ':<b>', round(geo.map[[tracer]], 2), '</b>'),
-                   paste('Time:  ', format(geo.map$Time_common, tz='MST', format='%Y-%m-%d %H:%M %Z')))
+                   paste(tracer, ':<b>', round(geo_map[[tracer]], 2), '</b>'),
+                   paste('Time:  ', format(geo_map$Time_common, tz='MST', format='%Y-%m-%d %H:%M %Z')))
       
       l <- leaflet() %>% 
         addTiles(urlTemplate='http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png') %>%
-        fitBounds(lng1=max(geo.map$lon)+0.01, lat1=min(geo.map$lat)-0.01, 
-                  lng2=min(geo.map$lon)-0.01, lat2=max(geo.map$lat)+0.01) %>%
-        addCircles(lng=geo.map$lon, lat=geo.map$lat, radius=30, popup=pop, stroke=T, weight=2,
+        fitBounds(lng1=max(geo_map$lon)+0.01, lat1=min(geo_map$lat)-0.01, 
+                  lng2=min(geo_map$lon)-0.01, lat2=max(geo_map$lat)+0.01) %>%
+        addCircles(lng=geo_map$lon, lat=geo_map$lat, radius=30, popup=pop, stroke=T, weight=2,
                    fillColor=cpal(cols), color=cpal(cols), 
                    opacity=0.3, fillOpacity=0.3) %>%
         addLegend('bottomright', pal=cpal, values=cols, opacity=0.7)

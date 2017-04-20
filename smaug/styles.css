@@ -1,0 +1,65 @@
+.js-irs-0 .irs-bar {
+border-top-color: #233D4D;
+border-bottom-color: #233D4D;
+} 
+.js-irs-0 .irs-bar-edge {
+border-color: #233D4D;
+}
+.js-irs-0 .irs-single, .js-irs-0 .irs-bar-edge, .js-irs-0 .irs-bar {
+background: #233D4D;
+}
+
+.js-irs-1 .irs-bar {
+border-top-color: #FE7F2D;
+border-bottom-color: #FE7F2D;
+} 
+.js-irs-1 .irs-bar-edge {
+border-color: #FE7F2D;
+}
+.js-irs-1 .irs-single, .js-irs-1 .irs-bar-edge, .js-irs-1 .irs-bar {
+background: #FE7F2D;
+}
+
+.js-irs-2 .irs-bar {
+border-top-color: #FCCA46;
+border-bottom-color: #FCCA46;
+} 
+.js-irs-2 .irs-bar-edge {
+border-color: #FCCA46;
+}
+.js-irs-2 .irs-single, .js-irs-2 .irs-bar-edge, .js-irs-2 .irs-bar {
+background: #FCCA46;
+}
+
+.js-irs-3 .irs-bar {
+border-top-color: #A1C181;
+border-bottom-color: #A1C181;
+} 
+.js-irs-3 .irs-bar-edge {
+border-color: #A1C181;
+}
+.js-irs-3 .irs-single, .js-irs-3 .irs-bar-edge, .js-irs-3 .irs-bar {
+background: #A1C181;
+}
+
+.js-irs-4 .irs-bar {
+border-top-color: #619B8A;
+border-bottom-color: #619B8A;
+} 
+.js-irs-4 .irs-bar-edge {
+border-color: #619B8A;
+}
+.js-irs-4 .irs-single, .js-irs-4 .irs-bar-edge, .js-irs-4 .irs-bar {
+background: #619B8A;
+}
+
+.js-irs-5 .irs-bar {
+border-top-color: #EB9486;
+border-bottom-color: #EB9486;
+} 
+.js-irs-5 .irs-bar-edge {
+border-color: #EB9486;
+}
+.js-irs-5 .irs-single, .js-irs-5 .irs-bar-edge, .js-irs-5 .irs-bar {
+background: #EB9486;
+}

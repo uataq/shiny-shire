@@ -1,27 +1,28 @@
 # Ben Fasoli
 source('global.R')
 
-network <- function(site) {
-  if (site %in% c('csp', 'fru', 'hpl', 'roo', 'sno', 'wbb')) {
-    return('ch4')
-  } else if (site %in% c('dbk', 'heb', 'lgn', 'rpk', 'sug', 'sun')) {
-    return('co2')
-  }
-}
-
 get_data <- function(sites, t_start, t_end, variables) {
   tmp <- lapply(sites, t_start = t_start, t_end = t_end, variables = variables,
                 function(site, t_start, t_end, variables) {
                   base <- file.path('/projects/data', site, 'calibrated')
+                  # Desired files
                   files <- strftime(seq(t_start, t_end, by = 'day'), '%Y_%m_calibrated.dat') %>%
                     unique %>%
                     file.path(base, .)
-                  col_types <- switch(network(site),
-                                      'co2' = 'Tddddiddc',
-                                      'ch4' = 'Tddddidddddidc')
-                  tmp <- file.path('/projects/data', site, 'calibrated') %>%
+                  # Available files
+                  files <- file.path('/projects/data', site, 'calibrated') %>%
                     dir(full.names = T, pattern = '.*\\.dat') %>%
-                    intersect(files) %>%
+                    intersect(files)
+                  if (length(files) < 1) {
+                    return(NULL)
+                  }
+                  col_types <- read_lines(files %>% tail(1), n_max = 1) %>%
+                    (function(x) {
+                      if (grepl('CH4d_ppm_cal', x, fixed = T))
+                        return('Tddddddddddddddc')
+                      else
+                        return('Tdddddddc')})
+                  files %>%
                     lapply(read_csv, col_types = col_types, locale = locale(tz = 'UTC')) %>%
                     bind_rows()
                 }) %>%
@@ -37,6 +38,7 @@ get_data <- function(sites, t_start, t_end, variables) {
     }
     df <- df %>%
       mutate(Time_UTC = strftime(Time_UTC, tz = 'UTC', format = '%Y-%m-%d %H:%M:%S %Z'))
+    return(df)
   } else {
     info('No data found. Try a different date range, different site, or different set of variables.')
     return(NULL)
@@ -44,12 +46,10 @@ get_data <- function(sites, t_start, t_end, variables) {
 }
 
 
-
-
 # Server initialization --------------------------------------------------------
 function(input, output, session) {
   valid <- readr::read_csv(tail(dir('user_auth', full.names=T), 1))
-
+  
   auth <- reactiveValues(agree    = F,
                          logged   = F,
                          token    = NA,
@@ -58,7 +58,7 @@ function(input, output, session) {
                          t_end    = NA,
                          sites    = list(NA),
                          btn_cnt  = 0)
-
+  
   # URL query ------------------------------------------------------------------
   observe({
     q <- parseQueryString(isolate(session$clientData$url_search))
@@ -67,17 +67,17 @@ function(input, output, session) {
     if ('agree' %in% names(q))
       auth$agree <- T
   })
-
+  
   # Validate login credentials -------------------------------------------------
   observe({
-    # auth$token <- digest::digest('benfasoli')
-    # auth$agree <- T
+    #auth$token <- digest::digest('benfasoli')
+    #auth$agree <- T
     if (!auth$agree) return()
     if (!is.null(input$token) && nchar(input$token) == 32)
       auth$token <- input$token
-
+    
     idx <- match(auth$token, sapply(valid$name, digest))
-
+    
     if (!is.na(idx[1])) {
       toggleModal(session, 'key_window', toggle = 'hide')
       auth_info    <- valid[idx[1], ]
@@ -90,14 +90,18 @@ function(input, output, session) {
       info('Login error. Check for valid token.')
     }
   })
-
+  
   # Body UI --------------------------------------------------------------------
   observeEvent(input$agree, auth$agree <- T)
   observe({
     if (!is.null(input$agree) && input$agree && is.na(auth$token))
       toggleModal(session, 'key_window', 'show')
   })
-
+  # observeEvent(input$btn, {
+  # toggleModal(session, 'dt_window', 'show')
+  # })
+  observe(print(input$btn))
+  
   output$dash <- renderUI({
     if (!auth$logged) {
       column(12,
@@ -108,7 +112,7 @@ function(input, output, session) {
              )
       )
     } else {
-
+      
       # Manipulate user authentication options
       opts_sites <- auth$sites
       if (!is.na(auth$sites)) {
@@ -122,7 +126,7 @@ function(input, output, session) {
       }
       opts_t_start <- auth$t_start
       opts_t_end <- auth$t_end
-
+      
       fluidRow(
         column(8, offset = 2,
                box(title='Choose data',
@@ -150,47 +154,77 @@ function(input, output, session) {
                                            'm_co2', 'b_co2', 'n_co2', 'CH4d_ppm_cal',
                                            'CH4d_ppm_raw', 'm_ch4', 'b_ch4', 'n_ch4'),
                                multiple = T),
-                   tags$a(id = 'btn', class = 'btn btn-default btn-block shiny-download-link disabled',
-                          href = '', target = '_blank', icon('download'), 'Download')
+                   # tags$a(id = 'btn', class = 'btn btn-default btn-block shiny-download-link disabled',
+                   #        href = '', target = '_blank', icon('download'), 'Download')
+                   tags$button(id ='btn', class = 'btn btn-default btn-block disabled',
+                               icon('search'), 'Fetch data')
                )
-        )#,
-
-        # column(7,
-        #        box(title='Example data structure', width=NULL, solidHeader=T,
-        #            # DT::renderDataTable('table')
-        #            'hi'
-        #        ))
+        ),
+        bsModal('dt_window', 'Queried Data', 'btn',
+                tags$a(id = 'btn_download', class = 'btn btn-danger btn-block shiny-download-link',
+                       href = '', target = '_blank', icon('download'), 'Download'),
+                hr(),
+                conditionalPanel(condition = "$('html').hasClass('shiny-busy')", 
+                                 tags$div(HTML("<center><i class=\"fa fa-refresh fa-spin\"></i> Loading data... </center>"))),
+                DT::dataTableOutput('dt'))
       )
     }
   })
-
+  
   # Enable or disable example button -------------------------------------------
   observe({
     cond <- !is.null(input$sites) &&
       nchar(input$sites) > 1 &&
       !is.null(input$variables) &&
       nchar(input$variables > 1)
-
+    
     # Classes when button enabled
-    toggleClass('btn', 'btn-danger', cond)
+    toggleClass('btn', 'btn-success', cond)
     # Classes when button disabled
     toggleClass('btn', 'btn-default disabled', !cond)
   })
-
+  
+  # Render data table ----------------------------------------------------------
+  data <- reactive(
+    get_data(input$sites, input$t_start, input$t_end, input$variables)
+  )
+  
+  output$dt <- DT::renderDataTable(
+    extensions = c('Responsive', 'Scroller'),
+    options = list(
+      # Scroller Options
+      deferRender = T,
+      scrollY = 400,
+      scroller = T
+    ),
+    data()
+  )
+  
   # Download handler -----------------------------------------------------------
-  output$btn <- downloadHandler(
+  output$btn_download <- downloadHandler(
     contentType = 'text/csv',
     filename = function() {
       paste0('uataq-', strftime(Sys.Date(), '%Y%m%d'), '.csv')
     },
     content = function(file) {
-      removeClass('btn', 'btn-default disabled')
-      print(input$variables)
-      df <- get_data(input$sites, input$t_start, input$t_end, input$variables)
-      print(str(df))
-      print(colnames(df))
-      if (!is.null(df))
-        write_csv(df, file)
+      df <- data()
+      if (!is.null(df)) {
+        char_data <- apply(df, 1, paste, collapse = ', ')
+        fair_use <- read_file('www/fair_use.md') %>% 
+          gsub('(.{1,90})(\\s|$)', '\\1\n', .) %>%
+          strsplit('\n', fixed = T) %>%
+          unlist
+        out <- 'number of lines to skip to header: 35'
+        out <- append(out, 
+                      c('',
+                        'Generated at http://air.utah.edu',
+                        'Ben Fasoli',
+                        ''))
+        out <- append(out, fair_use)
+        out <- append(out, paste(colnames(df), collapse = ', '))
+        out <- append(out, char_data)
+        write_lines(out, file)
+      }
     }
   )
 }
