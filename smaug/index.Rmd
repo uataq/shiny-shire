@@ -21,9 +21,10 @@ db <- reactiveFileReader(10000, session, 'db.rds', function(x) {
 observe({
   users <- c('ben', 'daniel', 'derek', 'dien', 'henrique', 'john')
   for (i in 1:length(users)) {
-    if (db()$dates[i] >= Sys.Date())
+    if (db()$dates[i] >= Sys.Date()) {
       updateSliderInput(session, paste0('s', users[i]), value=db()$sliders[i])
       updateDateInput(session, paste0('d', users[i]), value=db()$dates[i])
+    }
   }
 })
 
@@ -50,37 +51,37 @@ hr()
 
 fluidRow(
   column(2, h4('Ben')),
-  column(7, sliderInput('sben', NULL, 1, 10, 1, step = 1, ticks = F, width = '100%')),
+  column(7, sliderInput('sben', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
   column(3, dateInput('dben', NULL, value = Sys.Date()))
 )
 
 fluidRow(
   column(2, h4('Daniel')),
-  column(7, sliderInput('sdaniel', NULL, 1, 10, 1, step = 1, ticks = F, width = '100%')),
+  column(7, sliderInput('sdaniel', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
   column(3, dateInput('ddaniel', NULL, value = Sys.Date()))
 )
 
 fluidRow(
   column(2, h4('Derek')),
-  column(7, sliderInput('sderek', NULL, 1, 10, 1, step = 1, ticks = F, width = '100%')),
+  column(7, sliderInput('sderek', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
   column(3, dateInput('dderek', NULL, value = Sys.Date()))
 )
 
 fluidRow(
   column(2, h4('Dien')),
-  column(7, sliderInput('sdien', NULL, 1, 10, 1, step = 1, ticks = F, width = '100%')),
+  column(7, sliderInput('sdien', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
   column(3, dateInput('ddien', NULL, value = Sys.Date()))
 )
 
 fluidRow(
   column(2, h4('Henrique')),
-  column(7, sliderInput('shenrique', NULL, 1, 10, 1, step = 1, ticks = F, width = '100%')),
+  column(7, sliderInput('shenrique', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
   column(3, dateInput('dhenrique', NULL, value = Sys.Date()))
 )
 
 fluidRow(
   column(2, h4('John')),
-  column(7, sliderInput('sjohn', NULL, 1, 10, 1, step = 1, ticks = F, width = '100%')),
+  column(7, sliderInput('sjohn', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
   column(3, dateInput('djohn', NULL, value = Sys.Date()))
 )
 ```
@@ -129,7 +130,7 @@ renderValueBox({
   } else {
     closestDate <- min(dates)
     nday <- closestDate - Sys.Date()
-    closestDate <- format(closestDate, '%m-%d')
+    closestDate <- format(closestDate, '%m/%d')
   }
   valueBox(closestDate, color = 'info', icon = 'fa-calendar')
 })
