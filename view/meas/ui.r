@@ -48,7 +48,7 @@ sidebar <- dashboardSidebar(
   ),
   
   sidebarMenu(
-    menuItem('Extended Diagnostics', icon = icon('wrench'),
+    menuItem('Site Diagnostics', icon = icon('wrench'),
              href = 'https://air.utah.edu/s/view/diagnostics/', newtab = F),
     menuItem('About UATAQ', icon = icon('question'),
              href = 'https://air.utah.edu/about.html', newtab = F)

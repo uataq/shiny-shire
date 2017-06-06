@@ -13,25 +13,30 @@ output:
 library(flexdashboard)
 library(shiny)
 
+is.init <- reactiveVal(F)
+
 db <- reactiveFileReader(10000, session, 'db.rds', function(x) {
   readRDS(x)
 })
 
 # Persistent database for utilization and dates
 observe({
-  users <- c('ben', 'daniel', 'derek', 'dien', 'henrique', 'john')
+  users <- c('ben', 'chris', 'daniel', 'derek', 'dien', 'henrique', 'john')
   for (i in 1:length(users)) {
-    if (db()$dates[i] >= Sys.Date()) {
-      updateSliderInput(session, paste0('s', users[i]), value=db()$sliders[i])
-      updateDateInput(session, paste0('d', users[i]), value=db()$dates[i])
-    }
+    updateDateInput(session, paste0('ds', users[i]), value=db()$date_start[i])
+    updateSliderInput(session, paste0('s', users[i]), value=db()$sliders[i])
+    updateDateInput(session, paste0('de', users[i]), value=db()$date_end[i])
   }
+  is.init(T)
 })
 
 observe({
-  dates = c(input$dben, input$ddaniel, input$dderek, input$ddien, input$dhenrique, input$djohn)
-  sliders = c(input$sben, input$sdaniel, input$sderek, input$sdien, input$shenrique, input$sjohn)
-  saveRDS(data.frame(dates = dates, sliders = sliders), 'db.rds')
+  if (is.init()) {
+    date_start = c(input$dsben, input$dschris, input$dsdaniel, input$dsderek, input$dsdien, input$dshenrique, input$dsjohn)
+    date_end = c(input$deben, input$dechris, input$dedaniel, input$dederek, input$dedien, input$dehenrique, input$dejohn)
+    sliders = c(input$sben, input$schris, input$sdaniel, input$sderek, input$sdien, input$shenrique, input$sjohn)
+    saveRDS(data.frame(date_start = date_start, date_end = date_end, sliders = sliders), 'db.rds')
+  }
 })
 ```
 
@@ -43,46 +48,60 @@ Column {data-width=650}
 ```{r}
 fixedRow(
   column(2, h4('User (a-z)')),
-  column(7, h4('Node utilization')),
-  column(3, h4('Expected end'))
+  column(2, h4('Start')),
+  column(6, h4('Node utilization')),
+  column(2, h4('End'))
 )
 
 hr()
 
 fluidRow(
   column(2, h4('Ben')),
-  column(7, sliderInput('sben', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
-  column(3, dateInput('dben', NULL, value = Sys.Date()))
+  column(2, dateInput('dsben', NULL, value = Sys.Date())),
+  column(6, sliderInput('sben', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
+  column(2, dateInput('deben', NULL, value = Sys.Date()))
+)
+
+fluidRow(
+  column(2, h4('Chris')),
+  column(2, dateInput('dschris', NULL, value = Sys.Date())),
+  column(6, sliderInput('schris', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
+  column(2, dateInput('dechris', NULL, value = Sys.Date()))
 )
 
 fluidRow(
   column(2, h4('Daniel')),
-  column(7, sliderInput('sdaniel', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
-  column(3, dateInput('ddaniel', NULL, value = Sys.Date()))
+  column(2, dateInput('dsdaniel', NULL, value = Sys.Date())),
+  column(6, sliderInput('sdaniel', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
+  column(2, dateInput('dedaniel', NULL, value = Sys.Date()))
 )
 
 fluidRow(
   column(2, h4('Derek')),
-  column(7, sliderInput('sderek', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
-  column(3, dateInput('dderek', NULL, value = Sys.Date()))
+  column(2, dateInput('dsderek', NULL, value = Sys.Date())),
+  column(6, sliderInput('sderek', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
+  column(2, dateInput('dederek', NULL, value = Sys.Date()))
 )
 
 fluidRow(
   column(2, h4('Dien')),
-  column(7, sliderInput('sdien', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
-  column(3, dateInput('ddien', NULL, value = Sys.Date()))
+  column(2, dateInput('dsdien', NULL, value = Sys.Date())),
+  column(6, sliderInput('sdien', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
+  column(2, dateInput('dedien', NULL, value = Sys.Date()))
 )
 
 fluidRow(
   column(2, h4('Henrique')),
-  column(7, sliderInput('shenrique', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
-  column(3, dateInput('dhenrique', NULL, value = Sys.Date()))
+  column(2, dateInput('dshenrique', NULL, value = Sys.Date())),
+  column(6, sliderInput('shenrique', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
+  column(2, dateInput('dehenrique', NULL, value = Sys.Date()))
 )
 
 fluidRow(
   column(2, h4('John')),
-  column(7, sliderInput('sjohn', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
-  column(3, dateInput('djohn', NULL, value = Sys.Date()))
+  column(2, dateInput('dsjohn', NULL, value = Sys.Date())),
+  column(6, sliderInput('sjohn', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
+  column(2, dateInput('dejohn', NULL, value = Sys.Date()))
 )
 ```
 
@@ -93,7 +112,7 @@ Column {data-width=350}
 
 ```{r}
 renderValueBox({
-  sliders = c(input$sben, input$sdaniel, input$sderek, input$sdien, input$shenrique, input$sjohn)
+  sliders = c(input$sben, input$schris, input$sdaniel, input$sderek, input$sdien, input$shenrique, input$sjohn)
   total <- sum(sliders)
   color <- if (total <= 10) { 'success'
   } else if (total > 10 && total <= 14) { 'warning'
@@ -106,7 +125,7 @@ renderValueBox({
 
 ```{r}
 renderValueBox({
-  sliders = c(input$sben, input$sdaniel, input$sderek, input$sdien, input$shenrique, input$sjohn)
+  sliders = c(input$sben, input$schris, input$sdaniel, input$sderek, input$sdien, input$shenrique, input$sjohn)
   total <- sum(sliders)
   avail <- 15 - total
   color <- if (avail < 1) { 'danger'
@@ -123,7 +142,7 @@ renderValueBox({
 
 ```{r}
 renderValueBox({
-  dates = c(input$dben, input$ddaniel, input$dderek, input$ddien, input$dhenrique, input$djohn)
+  dates = c(input$deben, input$dechris, input$dedaniel, input$dederek, input$dedien, input$dehenrique, input$dejohn)
   dates = dates[dates > Sys.Date()]
   if (length(dates) < 1) {
     closestDate <- 'Now'

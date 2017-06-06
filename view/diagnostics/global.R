@@ -7,4 +7,4 @@ library(shiny)
 library(shinydashboard)
 library(xts)
 
-enableBookmarking(store = 'url')
+# enableBookmarking(store = 'url')
