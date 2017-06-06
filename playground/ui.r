@@ -1,4 +1,0 @@
-
-fluidPage(
-  actionButton('btn', 'Show!')
-)
