@@ -19,6 +19,8 @@ sidebar <- dashboardSidebar(
              newtab=F, icon=icon('home')),
     menuItem('Calibrated Data', href='http://air.utah.edu/s/view/meas/',
              newtab=F, icon=icon('area-chart')),
+    menuItem('Status Dashboard', href='http://air.utah.edu/status.html',
+             newtab=F, icon=icon('tachometer')),
     shiny::br(),
     div(align='center',
         selectInput('site', 'Site', 

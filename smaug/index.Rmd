@@ -10,6 +10,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+library(DT)
 library(flexdashboard)
 library(shiny)
 
@@ -21,20 +22,22 @@ db <- reactiveFileReader(10000, session, 'db.rds', function(x) {
 
 # Persistent database for utilization and dates
 observe({
-  users <- c('ben', 'chris', 'daniel', 'derek', 'dien', 'henrique', 'john')
+  users <- c('ben', 'brett', 'chris', 'daniel', 'derek', 'dien', 'henrique', 'john')
   for (i in 1:length(users)) {
-    updateDateInput(session, paste0('ds', users[i]), value=db()$date_start[i])
-    updateSliderInput(session, paste0('s', users[i]), value=db()$sliders[i])
-    updateDateInput(session, paste0('de', users[i]), value=db()$date_end[i])
+    if (db()$date_end[i] >= Sys.Date()) {
+      updateDateInput(session, paste0('ds', users[i]), value=db()$date_start[i])
+      updateDateInput(session, paste0('de', users[i]), value=db()$date_end[i])
+      updateSliderInput(session, paste0('s', users[i]), value=db()$sliders[i])
+    }
   }
   is.init(T)
 })
 
 observe({
   if (is.init()) {
-    date_start = c(input$dsben, input$dschris, input$dsdaniel, input$dsderek, input$dsdien, input$dshenrique, input$dsjohn)
-    date_end = c(input$deben, input$dechris, input$dedaniel, input$dederek, input$dedien, input$dehenrique, input$dejohn)
-    sliders = c(input$sben, input$schris, input$sdaniel, input$sderek, input$sdien, input$shenrique, input$sjohn)
+    date_start = c(input$dsben, input$dsbrett, input$dschris, input$dsdaniel, input$dsderek, input$dsdien, input$dshenrique, input$dsjohn)
+    date_end = c(input$deben, input$debrett, input$dechris, input$dedaniel, input$dederek, input$dedien, input$dehenrique, input$dejohn)
+    sliders = c(input$sben, input$sbrett, input$schris, input$sdaniel, input$sderek, input$sdien, input$shenrique, input$sjohn)
     saveRDS(data.frame(date_start = date_start, date_end = date_end, sliders = sliders), 'db.rds')
   }
 })
@@ -43,7 +46,7 @@ observe({
 Column {data-width=650}
 -----------------------------------------------------------------------
 
-### SMAUG SLURM Users
+### SMAUG SLURM Userss
 
 ```{r}
 fixedRow(
@@ -60,6 +63,13 @@ fluidRow(
   column(2, dateInput('dsben', NULL, value = Sys.Date())),
   column(6, sliderInput('sben', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
   column(2, dateInput('deben', NULL, value = Sys.Date()))
+)
+
+fluidRow(
+  column(2, h4('Brett')),
+  column(2, dateInput('dsbrett', NULL, value = Sys.Date())),
+  column(6, sliderInput('sbrett', NULL, 0, 14, 0, step = 1, ticks = F, width = '100%')),
+  column(2, dateInput('debrett', NULL, value = Sys.Date()))
 )
 
 fluidRow(
@@ -105,6 +115,15 @@ fluidRow(
 )
 ```
 
+### Current Utilization 
+```{r}
+slurm <- read.table('slurm_util.txt', stringsAsFactors = F, header = T)
+slurm$PARTITION <- NULL
+NAME <- slurm$NAME
+slurm$NAME <- NULL
+datatable(slurm, rownames = NAME, autoHideNavigation = T, options = list(paging = F, searching = F))
+```
+
 Column {data-width=350}
 -----------------------------------------------------------------------
 
@@ -112,7 +131,7 @@ Column {data-width=350}
 
 ```{r}
 renderValueBox({
-  sliders = c(input$sben, input$schris, input$sdaniel, input$sderek, input$sdien, input$shenrique, input$sjohn)
+  sliders = c(input$sben, input$sbrett, input$schris, input$sdaniel, input$sderek, input$sdien, input$shenrique, input$sjohn)
   total <- sum(sliders)
   color <- if (total <= 10) { 'success'
   } else if (total > 10 && total <= 14) { 'warning'
@@ -121,11 +140,11 @@ renderValueBox({
 })
 ```
 
-### Nodes idle
+### Unallocated nodes
 
 ```{r}
 renderValueBox({
-  sliders = c(input$sben, input$schris, input$sdaniel, input$sderek, input$sdien, input$shenrique, input$sjohn)
+  sliders = c(input$sben, input$sbrett, input$schris, input$sdaniel, input$sderek, input$sdien, input$shenrique, input$sjohn)
   total <- sum(sliders)
   avail <- 15 - total
   color <- if (avail < 1) { 'danger'
@@ -142,7 +161,7 @@ renderValueBox({
 
 ```{r}
 renderValueBox({
-  dates = c(input$deben, input$dechris, input$dedaniel, input$dederek, input$dedien, input$dehenrique, input$dejohn)
+  dates = c(input$deben, input$debrett, input$dechris, input$dedaniel, input$dederek, input$dedien, input$dehenrique, input$dejohn)
   dates = dates[dates > Sys.Date()]
   if (length(dates) < 1) {
     closestDate <- 'Now'

@@ -1,0 +1,9 @@
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+           2907031    lin-kp clm1_2_1 u0983603 PD       0:00     10 (Resources)
+           2907237    lin-kp     bash u0703457  R       8:19      1 kp038
+           2901408    lin-kp ROS_16_2 u0976307  R   12:52:07      1 kp033
+           2901409    lin-kp ROS_16_3 u0976307  R   12:52:07      1 kp034
+           2901407    lin-kp ROS_16_1 u0976307  R   12:54:17      1 kp036
+           2899114    lin-kp RUN_COMB u0976307  R   18:36:47      1 kp040
+           2862931    lin-kp WBB_16_3 u0976307  R 3-13:38:06      1 kp046
+           2861042    lin-kp HAW_16_3 u0976307  R 3-16:28:55      1 kp045
