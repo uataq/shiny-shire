@@ -56,7 +56,8 @@ proc <- function(zipfile, reader, calibrate)
     d$picarro_co[c('Time_common', 'CO_ppm')],
     d$nox2b[c('Time_common', 'NOx')],
     d$o32b[c('Time_common', 'O3_ppbv')],
-    d$grimm[c('Time_common', 'pm25')])
+    d$grimm[c('Time_common', 'pm25')],
+    d$metone[c('Time_common', 'pm25')])
   
   geo_s <- geo %>%
     arrange(Time_common) %>%
@@ -70,11 +71,11 @@ proc <- function(zipfile, reader, calibrate)
               NOx = mean(NOx, na.rm=T),
               O3_ppbv = mean(O3_ppbv, na.rm=T))
   
-  geo_interp <- cbind(Time_common = geo_s$Time_common,
-                      as_data_frame(
-                        lapply(geo_s[-1], na_interp, x=geo_s$Time_common)))
+  # geo_interp <- cbind(Time_common = geo_s$Time_common,
+  #                     as_data_frame(
+  #                       lapply(geo_s[-1], na_interp, x=geo_s$Time_common)))
 
-  return(geo_interp)
+  return(geo_s)
 }
 
 
@@ -227,6 +228,26 @@ reader$grimm <- function(path='UATAQ_Nerdmobile/raw/grimm.dat')
   data$pm25 <- data[-1] %>% select(1:17) %>%
     calc_mc(radius = r)
   
+  return(data)
+}
+reader$metone <- function(path='UATAQ_Nerdmobile/raw/metone.dat')
+{
+  # MetOne model ES-642
+  header <- c('Time_common', 'ID', 'pm25', 'Flow_lpm', 
+              'Temp_C', 'RH_pct', 'Pres_hPa', 'error', 'chksum')
+  
+  if(!file.exists(path)) return(NULL)
+  raw <- scan(path, what=character(), sep='\n', skipNul=T)
+  ndelim <- as.integer(lapply(raw, function(x){length(gregexpr(',', x)[[1]])}))
+  raw  <- raw[ndelim == 8]
+  data <- read.table(textConnection(raw), sep=',', skipNul=T, 
+                     stringsAsFactors=F, col.names=header)
+  mask <- substr(data[ ,1], 1, 2) == '20'
+  data <- data[mask, ]
+  if(nrow(data) < 1) return(NULL)
+  
+  data$Time_common <- as.POSIXct(data$Time_common, tz='UTC')
+  data$pm25 <- data$pm25 * 1000
   return(data)
 }
 reader$user_log <- function(path='UATAQ_Nerdmobile/raw/user_log.txt')

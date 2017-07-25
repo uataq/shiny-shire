@@ -1,9 +1,8 @@
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
-           2907031    lin-kp clm1_2_1 u0983603 PD       0:00     10 (Resources)
-           2907237    lin-kp     bash u0703457  R       8:19      1 kp038
-           2901408    lin-kp ROS_16_2 u0976307  R   12:52:07      1 kp033
-           2901409    lin-kp ROS_16_3 u0976307  R   12:52:07      1 kp034
-           2901407    lin-kp ROS_16_1 u0976307  R   12:54:17      1 kp036
-           2899114    lin-kp RUN_COMB u0976307  R   18:36:47      1 kp040
-           2862931    lin-kp WBB_16_3 u0976307  R 3-13:38:06      1 kp046
-           2861042    lin-kp HAW_16_3 u0976307  R 3-16:28:55      1 kp045
+         3074923_2    lin-kp SimCity_ u0791084  R 3-15:20:43      1 kp047
+           3082085    lin-kp Syn1000h u0977785  R    9:26:39      1 kp044
+         3082134_2    lin-kp UWFPS_ST u0791084  R    5:30:48      1 kp045
+         3082134_1    lin-kp UWFPS_ST u0791084  R    6:15:25      1 kp046
+           3080955    lin-kp S06MERRA u0981255  R 1-05:46:27      8 kp[033-035,038-042]
+         3074923_1    lin-kp SimCity_ u0791084  R 4-00:53:10      1 kp043
+         3074923_0    lin-kp SimCity_ u0791084  R 4-01:03:31      1 kp037

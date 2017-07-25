@@ -38,7 +38,8 @@ observe({
     date_start = c(input$dsben, input$dsbrett, input$dschris, input$dsdaniel, input$dsderek, input$dsdien, input$dshenrique, input$dsjohn)
     date_end = c(input$deben, input$debrett, input$dechris, input$dedaniel, input$dederek, input$dedien, input$dehenrique, input$dejohn)
     sliders = c(input$sben, input$sbrett, input$schris, input$sdaniel, input$sderek, input$sdien, input$shenrique, input$sjohn)
-    saveRDS(data.frame(date_start = date_start, date_end = date_end, sliders = sliders), 'db.rds')
+    df <- data.frame(date_start = date_start, date_end = date_end, sliders = sliders)
+    if (nrow(df) > 4) saveRDS(df, 'db.rds')
   }
 })
 ```
@@ -121,6 +122,7 @@ slurm <- read.table('slurm_util.txt', stringsAsFactors = F, header = T)
 slurm$PARTITION <- NULL
 NAME <- slurm$NAME
 slurm$NAME <- NULL
+#slurm <- arrange(slurm, USER)
 datatable(slurm, rownames = NAME, autoHideNavigation = T, options = list(paging = F, searching = F))
 ```
 
@@ -154,6 +156,21 @@ renderValueBox({
   } else if (avail >= 1 && avail <= 4) { 'fa-thumbs-up'
   } else 'fa-thumbs-up'
   valueBox(avail, color = color, icon = icon)
+})
+```
+
+### Current actual usage
+
+```{r}
+renderValueBox({
+  total <- nrow(slurm)
+  color <- if (total > 12) { 'danger'
+  } else if (total >= 8 && total <= 12) { 'warning'
+  } else 'success'
+  icon <- if (total > 12) { 'fa-ban'
+  } else if (total >= 8 && total <= 12) { 'fa-question-circle'
+  } else 'fa-thumbs-up'
+  valueBox(total, color = color, icon = icon)
 })
 ```
 
