@@ -1,0 +1,96 @@
+---
+title: "Pollution Exposure Model"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+library(leaflet)
+library(shiny)
+library(tidyverse)
+library(raster)
+library(xgboost)
+
+options(shiny.sanitize.errors = F)
+
+model <- readRDS('/projects/pollution-exposure/xgb_model.web.rds')
+model_cv <- readRDS('/projects/pollution-exposure/xgb_cv.web.rds')
+features_base <- read.csv('/projects/pollution-exposure/data/features.web.csv')
+```
+
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+sliderInput('month', 'Month', min = 1, max = 12, value = 2, step = 1)
+sliderInput('day_of_week', 'Day of Week', min = 1, max = 7, value = 2, step = 1)
+sliderInput('hour', 'Hour of Day', min = 0, max = 23, value = 14, step = 1)
+sliderInput('vhd', 'Valley Heat Deficit (VHD)', min = 0, max = 10, value = 5, step = 1)
+sliderInput('ivhd', 'Integrated VHD', min = 0, max = 100, value = 50, step = 5)
+```
+
+Row {.tabset}
+-----------------------------------------------------------------------
+
+### Concentration Map
+
+```{r, warning=FALSE}
+renderLeaflet({
+  if (F) input <- list(month = 1, day_of_week = 1, hour = 10, vhd = 0, ivhd = 1000)
+  features <- features_base
+  features$month <- input$month
+  features$day_of_week <- input$day_of_week
+  features$hour <- (input$hour - 7) %% 23
+  features$vhd <- input$vhd
+  features$ivhd <- input$ivhd
+  features$hvhd <- 1
+  
+  features <- features[, model$feature_names]
+  features$pred <- predict(model, as.matrix(features))
+  
+  features <- bind_cols(features, features_base[, c('long_deg', 'lati_deg')])
+  
+  str(features)
+  
+  r <- features %>%
+    dplyr::select(long_deg, lati_deg, pred) %>%
+    rasterFromXYZ(crs = '+proj=longlat')
+  
+  # r[r < 0] <- 0
+  # r[r > 100] <- 100
+  # col <- colorNumeric(rev(RColorBrewer::brewer.pal(11, 'Spectral')), 0:50)
+  col <- colorNumeric(c('blue', 'cyan', 'green', 'yellow', 'orange', 'red'), values(r))
+  
+  leaflet() %>%
+    setView(lng = -111.9, lat = 40.65, zoom = 11) %>%
+    addProviderTiles('CartoDB.Positron') %>%
+    addRasterImage(r, opacity = 0.3, colors = col) %>%
+    addLegend(pal = col, values = values(r), title = 'ug m-3')
+})
+```
+
+### Feature Importance
+
+```{r}
+i <- xgb.importance(feature_names = model$feature_names, 
+                    model = model, 
+                    trees = NULL)
+ggplot(i, aes(x = Feature, y = Gain, fill = Gain)) +
+  geom_bar(stat = 'identity') +
+  scale_x_discrete(limits = arrange(i, Gain)$Feature) +
+  scale_fill_gradientn(colors = c('blue', 'cyan', 'green', 'yellow', 'orange', 'red'),
+                       guide = F) +
+  coord_flip() +
+  labs(x = NULL, y = 'Total Gain') +
+  theme_classic()
+```
+
+### Cross Validation Metrics
+
+5-fold cross validation results:
+
+```{r}
+model_cv$evaluation_log[model_cv$best_iteration, ]
+```

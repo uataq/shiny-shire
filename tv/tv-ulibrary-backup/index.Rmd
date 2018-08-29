@@ -1,0 +1,99 @@
+---
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    css: styles.css
+    includes:
+      in_header: _header.html
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+library(flexdashboard)
+library(plotly)
+library(tidyverse)
+
+# Fetch data_frame containing the last 10 days of WBB observations
+# Raw data for metone-es642 and teledyne-t400
+# Calibrated data for lgr-ugga
+getData <- function() {
+  
+  getInstData <- function(loc) {
+    read_base <- function(., ...) read_csv(., locale = locale(tz = 'UTC'),
+                                           progress = F, ...)
+    fun <- switch(basename(loc),
+                  'metone-es642' = function(.) read_base(., col_types = 'Td______',
+                                                         col_names = c('Time', 'PM2.5')),
+                  'teledyne-t400' = function(.) read_base(., col_types = 'T_____d___',
+                                                          col_names = c('Time', 'O3')),
+                  'lgr-ugga' = function(.) read_base(., col_types = 'Td______d_______',
+                                                     col_names = c('Time', 'CO2', 'CH4')))
+    funw <- function(.) suppressWarnings(fun(.))
+    
+    loc %>%
+      dir(full.names = T) %>%
+      head(1) %>%
+      dir(full.names = T) %>%
+      tail(10) %>%
+      lapply(funw) %>%
+      bind_rows()
+  }
+  
+  file.path('/projects/data/wbb', c('lgr-ugga', 'metone-es642', 'teledyne-t400')) %>%
+    lapply(getInstData) %>%
+    bind_rows() %>%
+    group_by(Time = trunc(Time, units = 'hours') %>% as.POSIXct()) %>%
+    summarize_all(funs(mean(., na.rm = T)))
+}
+
+data <- getData()
+currently <- data %>%
+  select(-Time) %>%
+  tail(5 * 60) %>%
+  summarize_all(funs(round(mean(., na.rm = T), 1)))
+```
+
+Row
+------------------------------------------------------------------------------------------
+
+### PM<sub>2.5</sub> (ug m<sup>-3</sup>)
+
+```{r}
+value <- currently$`PM2.5`
+color <- if (value < 20) { 'success'
+} else if (value >= 20 && value < 50) { 'warning'
+} else 'danger'
+valueBox(value, color = color, icon = 'fa-car')
+```
+
+### O<sub>3</sub> (ppb)
+
+```{r}
+value <- currently$O3
+color <- if (value < 30) { 'success'
+} else if (value >= 30 && value < 70) { 'warning'
+} else 'danger'
+valueBox(value, color = color, icon = 'fa-sun-o')
+```
+
+### CO<sub>2</sub> (ppm)
+
+```{r}
+value <- currently$CO2
+color <- if (value < 430) { 'success'
+} else if (value >= 430 && value < 500) { 'warning'
+} else 'danger'
+valueBox(value, color = color, icon = 'fa-cloud')
+```
+
+### CH<sub>4</sub> (ppm)
+
+```{r}
+value <- currently$CH4
+color <- if (value < 2.1) { 'success'
+} else if (value >= 2.1 && value < 2.5) { 'warning'
+} else 'danger'
+valueBox(value, color = color, icon = 'fa-home')
+```

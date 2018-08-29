@@ -70,7 +70,7 @@ function(input, output, session) {
       color <- 'black'
     } else {
       if (value < 10) { color <- 'blue'
-      } else if (value >= 10 && value < 30) { color <- 'aqua'
+      } else if (value >= 10 && value < 30) { color <- 'cyan'
       } else if (value >= 30 && value < 50) { color <- 'green'
       } else if (value >= 50 && value < 70) { color <- 'yellow'
       } else if (value >= 70 && value < 90) { color <- 'orange'
@@ -204,7 +204,6 @@ function(input, output, session) {
       d$color <- d$O3
       d$color[d$color < minmax[1]] <- minmax[1]
       d$color[d$color > minmax[2]] <- minmax[2]
-      d$O3[d$O3 < 0] <- 0
       o3 <- ggplot(data=d, aes(x=Time, y=O3, color=color)) +
         geom_point(alpha=0.3) +
         scale_color_gradientn(colors=c('blue', 'cyan', 'green', 'yellow', 'orange', 'red'),
@@ -225,7 +224,7 @@ function(input, output, session) {
                               limits = minmax, guide=F) +
         scale_x_datetime(date_breaks='1 day', date_labels='%a') +
         xlab(NULL) +
-        ylab(expression(PM[2.5] ~ '(' ~ mu * g ~ m^-3 ~ ')')) +
+        ylab(expression(PM[2.5] ~ '(' ~ mu ~ 'g' ~ m[-3] ~ ')')) +
         theme_classic() +
         theme(legend.position='bottom', legend.title=element_blank())
       cowplot::plot_grid(pm, o3, co2, ch4, ncol = 1, align = 'hv')
@@ -261,7 +260,7 @@ function(input, output, session) {
                attribution = 'UATAQ, Ben Fasoli. Map tiles from CartoDB and Esri') %>%
       addTiles('http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
                options = tileOptions(opacity = 0.3)) %>%
-      setView(lng=-111.88, lat=40.64, zoom=10)
+      setView(lng=-111.88, lat=40.64, zoom=11)
     
     # Add mobile data points ---------------------------------------------------
     for (site in unique(m$site)) {
@@ -332,7 +331,6 @@ function(input, output, session) {
     
     leaf %>%
       addLegend('bottomright', pal=cpal_lgnd, values=breaks_lgnd,
-                labFormat=labelFormat(transform=function(x){-x}), opacity=0.7,
-                title = '(ppm)')
+                labFormat=labelFormat(transform=function(x){-x}), opacity=0.7)
   })
 }

@@ -27,24 +27,22 @@ body <- dashboardBody(
   fluidRow(
     column(6, 
            box(title=HTML('Northern Utah CO<sub>2</sub>'), width = NULL, status = 'danger',
-               leafletOutput('map', height = 420))
+               leafletOutput('map', height = 750))
     ),
     column(6,
            box(title=HTML('University of Utah - UATAQ Lab Trends'), width=NULL, status='danger',
-               plotOutput('ts', height=420)
+               plotOutput('ts', height=750)
            )
     )
   ),
-  div(style='text-align: center; font-size: 14px;',
+  div(style='text-align: center; font-size: 22px;',
       HTML('<i class="fa fa-question-circle"></i> For more information,',
-           'visit <b>air.utah.edu</b>',
-           '<br>Temperature and Wind Speed measurements courtesy of ',
-           '<b>MesoWest</b>')),
+           'visit <b>air.utah.edu</b>')),
   
   HTML('
     <div style="position:fixed; left: 10px; bottom: 10px; text-align: center;">
-    <img src="http://air.utah.edu/~benfasoli/img/LAIR_logo.png" style="width: 250px;">
-    <img src="http://air.utah.edu/~benfasoli/img/SCIF_logo.png" style="width: 100px;">
+    <img src="http://air.utah.edu/~benfasoli/img/LAIR_logo.png" style="width: 300px;">
+    <img src="http://air.utah.edu/~benfasoli/img/SCIF_logo.png" style="width: 150px;">
     </div>')
 )
 

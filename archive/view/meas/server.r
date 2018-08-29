@@ -48,10 +48,6 @@ function(input, output, session) {
     })
   })
   
-  observe({
-    toggleState('date_range', input$quality == 'calibrated')
-  })
-  
   output$subplots <- renderPlotly({
     req(input$site_id)
     
@@ -64,20 +60,18 @@ function(input, output, session) {
                            'This may take a moment for large datasets'),
                      type = 'error', id = 'recalculating')
     
-    date_range <- if (input$quality == 'calibrated') {
-      input$date_range %>% as.POSIXct()
-    } else c(Sys.Date()-1, Sys.Date()) %>% as.POSIXct()
+    date_range <- input$date_range %>% as.POSIXct()
     
     days <- seq(input$date_range[1], input$date_range[2], by = 'day')
     ndays <- length(days)
     
     available_files <- dir(file.path('/projects', 'data', input$site_id),
-                           pattern = paste0('_', input$quality, '.dat'),
+                           pattern = paste0('_calibrated.dat'),
                            recursive = T, full.names = T)
     available_files_base <- basename(available_files)
     matched_files <- available_files_base %>%
       intersect(format(days, tz = 'UTC',
-                       format = paste0('%Y_%m_', input$quality, '.dat')))
+                       format = paste0('%Y_%m_calibrated.dat')))
     filenames <- available_files[available_files_base %in% matched_files]
     
     if (length(filenames) < 1) {
@@ -128,12 +122,6 @@ function(input, output, session) {
       return()
     }
     
-    if (input$quality != 'calibrated') {
-      meas <- meas %>%
-        filter(ID_co2 == -10) %>%
-        mutate(ID_co2 = NULL, ID_ch4 = NULL)
-    }
-    
     avg_unit <- if (ndays < 3) { 'sec'
     } else if (ndays < 30) { 'min'
     } else if (ndays < 720) { 'hour'
@@ -160,6 +148,7 @@ function(input, output, session) {
   })
   
   output$dynamic_plot <- renderUI({
-    plotlyOutput('subplots', height = 300 + r$n_subplot * 150)
+    plotlyOutput('subplots', height = 300 + r$n_subplot * 150) %>% 
+      withSpinner(color = '#222C32')
   })
 }

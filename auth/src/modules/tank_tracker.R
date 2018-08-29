@@ -10,10 +10,15 @@ get_tank_names <- reactive( sort( names( get_tanks() )))
 
 # Reactive - Reset fields ------------------------------------------------------
 observeEvent({input$tank_reset; input$tank_view_reset; input$tank_function}, {
-  textfields <- c('tank_id', 'tank_psi', 'tank_location', 'tank_network', 'tank_co2', 'tank_ch4', 'tank_co', 
-                  'tank_note', 'tank_serial', 'tank_relative', 'tank_calfile', 'tank_co2_stdev', 'tank_co2_sterr', 
-                  'tank_co2_n', 'tank_ch4_stdev', 'tank_ch4_sterr', 'tank_ch4_n', 'tank_co_stdev', 
-                  'tank_co_sterr', 'tank_co_n', 'tank_otto_summary', 'tank_d13C', 'tank_d18O', 'tank_d13C_stdev', 'tank_d13C_sterr',
+  textfields <- c('tank_id', 'tank_psi', 'tank_location', 'tank_network', 'tank_co2', 
+                  'tank_ch4', 'tank_co', 'tank_note', 'tank_serial', 
+                  'tank_relative', 'tank_calfile', 'tank_co2_analyzer',
+                  'tank_ch4_analyzer', 'tank_ch4_relative', 'tank_ch4_calfile', 
+                  'tank_co_analyzer', 'tank_co_relative', 'tank_co_calfile', 
+                  'tank_co2_stdev', 'tank_co2_sterr', 
+                  'tank_co2_n', 'tank_ch4_stdev', 'tank_ch4_sterr', 'tank_ch4_n', 
+                  'tank_co_stdev', 'tank_co_sterr', 'tank_co_n', 'tank_otto_summary', 
+                  'tank_d13C', 'tank_d18O', 'tank_d13C_stdev', 'tank_d13C_sterr',
                   'tank_d13C_n', 'tank_d18O_stdev','tank_d18O_sterr','tank_d18O_n')
   selfields <- c('tank_num', 'tank_num_view')
   for (field in textfields) updateTextInput(session, field, value='')
@@ -37,9 +42,18 @@ observe({
       updateTextInput(session, 'tank_serial', value=last_record$Serial)
       updateTextInput(session, 'tank_relative', value=last_record$Relative)
       updateTextInput(session, 'tank_calfile', value=last_record$CalFile)
+      updateTextInput(session, 'tank_ch4_relative', value=last_record$Relative_CH4)
+      updateTextInput(session, 'tank_ch4_calfile', value=last_record$CalFile_CH4)
+      updateTextInput(session, 'tank_co_relative', value=last_record$Relative_CO)
+      updateTextInput(session, 'tank_co_calfile', value=last_record$CalFile_CO)
+      updateTextInput(session, 'tank_co2_analyzer', value=last_record$CO2_analyzer)
+      updateTextInput(session, 'tank_ch4_analyzer', value=last_record$CH4_analyzer)
+      updateTextInput(session, 'tank_co_analyzer', value=last_record$CO_analyzer)
       updateTextInput(session, 'tank_co2_stdev', value=last_record$CO2_stdev)
       updateTextInput(session, 'tank_co2_sterr', value=last_record$CO2_sterr)
-      updateTextInput(session, 'tank_co2_stn', value=last_record$CO2_n)
+      updateTextInput(session, 'tank_co2_n', value=last_record$CO2_n)
+      updateTextInput(session, 'tank_ch4_n', value=last_record$CH4_n)
+      updateTextInput(session, 'tank_co_n', value=last_record$CO_n)
       updateTextInput(session, 'tank_ch4_stdev', value=last_record$CH4_stdev)
       updateTextInput(session, 'tank_ch4_sterr', value=last_record$CH4_sterr)
       updateTextInput(session, 'tank_ch4_stn', value=last_record$CH4_n)
@@ -51,10 +65,10 @@ observe({
       updateTextInput(session, 'tank_d18O', value=last_record$d18O)
       updateTextInput(session, 'tank_d13C_stdev', value=last_record$d13C_stdev)
       updateTextInput(session, 'tank_d13C_sterr', value=last_record$d13C_sterr)
-      updateTextInput(session, 'tank_d13C_stn', value=last_record$d13C_n)
+      updateTextInput(session, 'tank_d13C_n', value=last_record$d13C_n)
       updateTextInput(session, 'tank_d18O_stdev', value=last_record$d18O_stdev)
       updateTextInput(session, 'tank_d18O_sterr', value=last_record$d18O_sterr)
-      updateTextInput(session, 'tank_d18O_stn', value=last_record$d18O_n)
+      updateTextInput(session, 'tank_d18O_n', value=last_record$d18O_n)
       updateTextInput(session, 'tank_note', value=last_record$Note)
     }
   }
@@ -123,27 +137,33 @@ output$tank_edit_ui <- renderUI({
       tags$textarea(id="tank_note", rows=5),
       hr(),
       h3('Quality'),
-      fluidRow(
-        column(4, textInput('tank_relative', 'Relative to')),
-        column(4, textInput('tank_calfile', 'Calibration file'))),
+      # fluidRow(
+      #   column(4, textInput('tank_relative', 'Relative to')),
+      #   column(4, textInput('tank_calfile', 'Calibration file'))),
       fluidRow(
         column(4, h4('CO2'),
                selectInput('tank_co2_analyzer', 'Analyzer',
                            c('LI7000 IRG4-0279',
                              'LI7000 IRG4-0280',
                              'LGR RM 14-0269')),
+               textInput('tank_relative', 'Relative to'),
+               textInput('tank_calfile', 'Calibration file'),
                textInput('tank_co2_stdev', 'StDev'),
                textInput('tank_co2_sterr', 'StErr'),
                textInput('tank_co2_n', 'N')),
         column(4, h4('CH4'),
                selectInput('tank_ch4_analyzer', 'Analyzer',
                            c('', 'LGR RM 14-0269')),
+               textInput('tank_ch4_relative', 'Relative to'),
+               textInput('tank_ch4_calfile', 'Calibration file'),
                textInput('tank_ch4_stdev', 'StDev'),
                textInput('tank_ch4_sterr', 'StErr'),
                textInput('tank_ch4_n', 'N')),
         column(4, h4('CO'),
                selectInput('tank_co_analyzer', 'Analyzer',
                            c('', 'Unknown')),
+               textInput('tank_co_relative', 'Relative to'),
+               textInput('tank_co_calfile', 'Calibration file'),
                textInput('tank_co_stdev', 'StDev'),
                textInput('tank_co_sterr', 'StErr'),
                textInput('tank_co_n', 'N'))),
@@ -191,13 +211,19 @@ output$tank_remove_time_ui <- renderUI({
 observeEvent(input$tank_add_save, {
   tanks <- get_tanks()
   d <- data_frame(ID = as.character(NA), Serial = as.character(NA), Time = as.POSIXct(as.character(NA)), 
-                  Pressure = as.numeric(NA), Location = as.character(NA), Network = as.character(NA), CO2_analyzer = as.character(NA),
-                  CO2 = as.numeric(NA), CO2_stdev = as.numeric(NA), CO2_sterr = as.numeric(NA), CO2_n = as.numeric(NA),
-                  CH4_analyzer = as.character(NA), CH4 = as.numeric(NA), CH4_stdev = as.numeric(NA), CH4_sterr = as.numeric(NA), CH4_n = as.numeric(NA),
-                  CO_analyzer = as.character(NA), CO = as.numeric(NA), CO_stdev = as.numeric(NA), CO_sterr = as.numeric(NA), CO_n = as.numeric(NA), OTTO_summary = as.character(NA),
-                  d13C = as.numeric(NA), d13C_stdev = as.numeric(NA), d13C_sterr = as.numeric(NA), d13C_n = as.numeric(NA),
-                  d18O = as.numeric(NA), d18O_stdev = as.numeric(NA), d18O_sterr = as.numeric(NA), d18O_n = as.numeric(NA), 
-                  Relative = as.character(NA), CalFile = as.character(NA), Note = as.character(NA), Name = as.character(NA))
+                  Pressure = as.numeric(NA), Location = as.character(NA), Network = as.character(NA), 
+                  CO2_analyzer = as.character(NA), CO2 = as.numeric(NA), CO2_stdev = as.numeric(NA), 
+                  CO2_sterr = as.numeric(NA), CO2_n = as.numeric(NA), CH4_analyzer = as.character(NA), 
+                  CH4 = as.numeric(NA), CH4_stdev = as.numeric(NA), CH4_sterr = as.numeric(NA), 
+                  CH4_n = as.numeric(NA), CO_analyzer = as.character(NA), CO = as.numeric(NA), 
+                  CO_stdev = as.numeric(NA), CO_sterr = as.numeric(NA), CO_n = as.numeric(NA), 
+                  OTTO_summary = as.character(NA), d13C = as.numeric(NA), d13C_stdev = as.numeric(NA), 
+                  d13C_sterr = as.numeric(NA), d13C_n = as.numeric(NA), d18O = as.numeric(NA), 
+                  d18O_stdev = as.numeric(NA), d18O_sterr = as.numeric(NA), d18O_n = as.numeric(NA), 
+                  Relative = as.character(NA), CalFile = as.character(NA), 
+                  Relative_CH4 = as.character(NA), CalFile_CH4 = as.character(NA), 
+                  Relative_CO = as.character(NA), CalFile_CO = as.character(NA),
+                  Note = as.character(NA), Name = as.character(NA))
   
   tanks[input$tank_add_num] <- list(d)
   isolate(tt$refresh <- FALSE)
@@ -254,6 +280,10 @@ observeEvent(input$tank_save, {
                     d18O_n = as.numeric(input$tank_d18O_n),
                     Relative = input$tank_relative,
                     CalFile = input$tank_calfile,
+                    Relative_CH4 = input$tank_ch4_relative,
+                    CalFile_CH4 = input$tank_ch4_calfile,
+                    Relative_CO = input$tank_co_relative,
+                    CalFile_CO = input$tank_co_calfile,
                     Note = input$tank_note,
                     Name = auth$name)
     
@@ -289,19 +319,20 @@ observeEvent(input$tank_remove_trigger, {
 # Event - Empty tank button press ----------------------------------------------
 observeEvent(input$tank_emptybutton, {
   textfields <- c('tank_location', 'tank_network', 'tank_id', 'tank_co2', 'tank_ch4', 'tank_co', 
-                  'tank_note', 'tank_relative', 'tank_calfile', 'tank_co2_stdev', 'tank_co2_sterr', 
+                  'tank_note', 'tank_relative', 'tank_calfile', 
+                  'tank_ch4_analyzer', 'tank_ch4_relative', 'tank_ch4_calfile', 
+                  'tank_co_analyzer', 'tank_co_relative', 'tank_co_calfile', 
+                  'tank_co2_stdev', 'tank_co2_sterr', 
                   'tank_co2_n', 'tank_ch4_stdev', 'tank_ch4_sterr', 'tank_ch4_n', 'tank_co_stdev', 
-                  'tank_co_sterr', 'tank_co_n', 'tank_otto_summary', 'tank_d13C', 'tank_d18O', 'tank_d13C_stdev', 'tank_d13C_sterr',
-                  'tank_d13C_n', 'tank_d18O_stdev','tank_d18O_sterr','tank_d18O_n')
+                  'tank_co_sterr', 'tank_co_n', 'tank_otto_summary', 'tank_d13C', 'tank_d18O', 
+                  'tank_d13C_stdev', 'tank_d13C_sterr', 'tank_d13C_n', 'tank_d18O_stdev',
+                  'tank_d18O_sterr','tank_d18O_n')
   for (field in textfields) updateTextInput(session, field, value='')
   updateTextInput(session, 'tank_psi', value=0)
 })
 
 # UI - Datatable of tanks ------------------------------------------------------
-output$dt_tank <- DT::renderDataTable(server=F, rownames=F,
-                                      # options=list(responsive=T),
-                                      extensions=c('Responsive'),
-                                      {
+output$dt_tank <- DT::renderDataTable({
   if(input$tank_function=='View') tank <- input$tank_num_view
   else if(input$tank_function=='Remove') tank <- input$tank_num_remove
   else if(input$tank_function=='Edit') tank <- input$tank_num
@@ -322,7 +353,7 @@ output$dt_tank <- DT::renderDataTable(server=F, rownames=F,
   }
   dt %>%
     mutate(Time = format(Time, tz='America/Denver', format='%Y-%m-%d %H:%M %Z'))
-})
+}, server=F, rownames=F, extensions=c('Responsive'))
 
 
 # Download - access tank database ----------------------------------------------

@@ -48,13 +48,13 @@ map <- function(input, output, session, data, tab) {
       if(nrow(md[mask, ]) > 300){
         temp <- md[mask, ]
         smoothby <- 30
-        temp[ ,tab] <- ivis::runSmooth(temp[ ,tab], n=smoothby)
+        temp[ ,tab] <- uataq::run_smooth(temp[ ,tab], n=smoothby)
         temp <- temp[seq(1, nrow(temp), by=smoothby), ]
       } else temp <- md[mask, ]
       
       # Specify color index according to max and min
       dat <- na.omit(temp)
-      dat$color <- dat[ ,tab]
+      dat$color <- dat[[tab]]
       # dat$color <- scales::rescale(dat[ , tab], to=minmax)
       
       pop<- paste(sep='<br>',
@@ -80,7 +80,8 @@ map <- function(input, output, session, data, tab) {
     breaks_lgnd <- seq(minmax[1], minmax[2], length.out=10)
     
     leaf %>%
-      addLegend('bottomright', pal=cpal, values=breaks_lgnd, opacity=0.7)
+      leaflet::addLegend('bottomright', pal=cpal, values=breaks_lgnd, opacity=0.7)
+    # conflict with addLegend xts
   })
   
   output$ts <- renderDygraph({
@@ -115,6 +116,7 @@ map <- function(input, output, session, data, tab) {
     validate(need(nrow(temp) > 1, 'No data found. Try a different dataset?'))
     
     d <- xts(temp[-1], temp$Time_UTC)
+    str(d)
     
     dygraph(d , xlab='Time (Local)') %>%
       dyHighlight(highlightCircleSize = 3,

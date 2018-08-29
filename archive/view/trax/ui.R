@@ -31,7 +31,7 @@ body <- dashboardBody(
     column(12, 
            do.call(function(...){tabBox(..., id='tab', width=NULL)}, 
                    apply(opts, 1,
-                         function(x) tabPanel(x[1], mapUI(x[2]), value=x[2])))#,
+                         function(x) tabPanel(x[1], mapUI(x[2]), value=x[2]))),
            # box(status='danger', width=NULL, collapsible=T,
            #     fluidRow(
            #       column(4, selectInput('left', label='Left', choices=opts$long)),
@@ -39,6 +39,8 @@ body <- dashboardBody(
            #     ),
            #     dygraphOutput('ts')
            # )
+           p('Measurements made in collaboration with ', 
+             a('MesoWest', href='http://mesowest.utah.edu'))
     )
   )
 )

@@ -7,7 +7,7 @@ function(input, output, session) {
   # Import data
   md <- reactive({
     invalidateLater(300000, session)
-    readRDS('/home/benfasoli/cron/air.utah.edu/data/airmap.rds')$mobile
+    readRDS('/home/benfasoli/cron/air.utah.edu/_data/airmap.rds')$mobile
   })
   
   # Initialize display modules

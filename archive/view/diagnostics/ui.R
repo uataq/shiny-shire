@@ -29,10 +29,8 @@ sidebar <- dashboardSidebar(
         dateRangeInput('date_range', 'Date range',
                        start=Sys.Date()-7, end=Sys.Date()+1),
         uiOutput('column_ui'),
-        actionButton('apply', strong('Show me')),
-        conditionalPanel('$("html").hasClass("shiny-busy")',
-                         tags$div(style='font-size: 20px;',
-                                  HTML('<i class="fa fa-refresh fa-spin"></i>')))
+        checkboxInput('show_atmos', 'Include Atmosphere', value = T),
+        actionButton('apply', strong('Show me'))
     )
   )
 )
@@ -45,7 +43,8 @@ body <- dashboardBody(
     column(12,
            box(status='danger', width=NULL,
                conditionalPanel('input.site == ""', 'To get started, choose a location on the left.'),
-               dygraphOutput('ts', height=500)
+               dygraphOutput('ts', height=500) %>% 
+                 withSpinner(color = '#222C32')
            )
     )
   )

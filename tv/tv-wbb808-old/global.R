@@ -1,7 +1,7 @@
 # Ben Fasoli
 
 # Load dependencies ------------------------------------------------------------
-lapply(c('tidyverse', 'leaflet', 'jsonlite', 'shiny', 'shinydashboard', 'uataq'),
+lapply(c('dplyr', 'ggplot2', 'leaflet', 'shiny', 'shinydashboard', 'uataq'),
        library, character.only=T)
 
 # User accessible fields -------------------------------------------------------
@@ -27,7 +27,8 @@ mod_map_ui <- function(id) {
         div(br()),
         actionButton(ns('goto_slc'), 'Salt Lake City', icon=icon('search'), width=150,
                      class='btn btn-primary'),
-        img(src='SCIF_logo.png', width=150, align='middle'))
+        # div(br()),
+        img(src='SCIF_logo.png', width=150, align='middle'))#,
   )
 }
 

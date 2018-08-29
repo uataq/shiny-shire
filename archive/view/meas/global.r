@@ -12,6 +12,7 @@ libs <- c(
   'ggthemes',
   'plotly',
   'shiny',
+  'shinycssloaders',
   'shinydashboard',
   'shinyjs',
   'tidyverse',

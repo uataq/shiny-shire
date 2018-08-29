@@ -41,7 +41,6 @@ make_figs <- function(geo) {
       summarize_all(funs(mean(., na.rm = T))) %>%
       ungroup() %>%
       select(-lati_idx, -long_idx)
-    str(geo_map)
 
     minmax <- c(min(geo_map[tracer]), max(geo_map[tracer]))
 
@@ -60,7 +59,7 @@ make_figs <- function(geo) {
       addCircles(lng=geo_map$lon, lat=geo_map$lat, radius=30, popup=pop, stroke=T, weight=2,
                  fillColor=cpal(cols), color=cpal(cols),
                  opacity=0.3, fillOpacity=0.3) %>%
-      addLegend('bottomright', pal=cpal, values=cols, opacity=0.7)
+      leaflet::addLegend('bottomright', pal=cpal, values=cols, opacity=0.7)
     saveWidget(l, file=paste0(getwd(), '/UATAQ_Nerdmobile/maps/', tracer, '_map.html'),
                libdir=paste0(getwd(), '/UATAQ_Nerdmobile/maps/dependencies/'), selfcontained=F)
     return(l)
@@ -186,14 +185,14 @@ function(input, output, session) {
                    paste(tracer, ':<b>', round(geo_map[[tracer]], 2), '</b>'),
                    paste('Time:  ', format(geo_map$Time_common, tz='MST', format='%Y-%m-%d %H:%M %Z')))
       
-      l <- leaflet() %>% 
+      l <- leaflet() %>%
         addTiles(urlTemplate='http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png') %>%
         fitBounds(lng1=max(geo_map$lon)+0.01, lat1=min(geo_map$lat)-0.01, 
                   lng2=min(geo_map$lon)-0.01, lat2=max(geo_map$lat)+0.01) %>%
         addCircles(lng=geo_map$lon, lat=geo_map$lat, radius=30, popup=pop, stroke=T, weight=2,
                    fillColor=cpal(cols), color=cpal(cols), 
                    opacity=0.3, fillOpacity=0.3) %>%
-        addLegend('bottomright', pal=cpal, values=cols, opacity=0.7)
+        leaflet::addLegend('bottomright', pal=cpal, values=cols, opacity=0.7)
       l
     })
   

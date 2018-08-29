@@ -40,11 +40,11 @@ sidebar <- dashboardSidebar(
                   'sug - Sugarhouse' = 'sug',
                   'sun - Suncrest' = 'sun',
                   'wbb - University of Utah' = 'wbb'),
-                width = '100%'),
-    selectInput('quality', 'Dataset',
-                c('Calibrated Measurements' = 'calibrated',
-                  'Instrument Diagnostics' = 'parsed'),
-                width = '100%')
+                width = '100%')#,
+    # selectInput('quality', 'Dataset',
+                # c('Calibrated Measurements' = 'calibrated',
+                #   'Instrument Diagnostics' = 'parsed'),
+                # width = '100%')
   ),
   
   sidebarMenu(
