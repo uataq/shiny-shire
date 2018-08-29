@@ -1,7 +1,7 @@
 # Ben Fasoli
 source('global.r')
 
-max_rows <- 10000
+max_rows <- 5000
 
 function(input, output, session) {
 
@@ -30,7 +30,8 @@ function(input, output, session) {
     file <- dir(path, full.names = T)[1]
     header <- strsplit(readLines(file, n = 1), ',')[[1]]
     not_options <- c('Time_UTC', 'ID', 'ID_CO2', 'ID_CH4', 'Program', 'QAQC_Flag')
-    c('', setdiff(header, not_options))
+    header <- c('', setdiff(header, not_options))
+    setNames(header, gsub('_', ' ', header))
   })
   
   # On stid change, ensure column options are up to date
