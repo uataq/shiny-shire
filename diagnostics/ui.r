@@ -62,7 +62,7 @@ function(req) {
   )
   
   
-  dashboardPage(title = 'UATAQ Data', skin = 'black',
+  dashboardPage(title = 'UATAQ Diagnostics', skin = 'black',
                 header, sidebar, body)
 }
 
