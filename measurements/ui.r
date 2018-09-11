@@ -57,7 +57,7 @@ function(req) {
   )
   
   
-  dashboardPage(title = 'UATAQ Data', skin = 'black',
+  dashboardPage(title = 'UATAQ Measurements', skin = 'black',
                 header, sidebar, body)
 }
 

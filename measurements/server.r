@@ -105,9 +105,10 @@ function(input, output, session) {
           y <- .[[variables$var_name[i]]]
           plot_ly(., x = ~Time_UTC, y = y,
                   name = variables$short[i],
-                  type = 'scatter', mode = 'none',
+                  type = 'scatter', mode = 'lines',
                   fill = 'tozeroy',
-                  fillcolor = variables$color[i]) %>%
+                  fillcolor = variables$color[i],
+                  line = list(color = variables$color[i])) %>%
             layout(yaxis = list(range = range(y),
                                 showgrid = F,
                                 title = variables$long[i]))
