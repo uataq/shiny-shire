@@ -19,7 +19,7 @@ function(req) {
         align = 'center',
         dateRangeInput('dates',
                        label = 'Time Period',
-                       start = Sys.Date() - 3,
+                       start = Sys.Date() - 14,
                        end   = Sys.Date(),
                        max   = Sys.Date(),
                        width = '100%'
@@ -36,7 +36,11 @@ function(req) {
         ),
         actionButton('submit',
                      label = 'Search',
-                     icon = icon('search'))
+                     icon = icon('search')),
+        checkboxInput('include_atmos',
+                      label = 'Include Atmosphere',
+                      value = T,
+                      width = '100%')
       ),
       menuItem('Network status', icon = icon('tachometer'),
                href = 'https://air.utah.edu/status.html', newtab = F),

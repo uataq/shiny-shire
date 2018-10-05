@@ -19,7 +19,7 @@ function(req) {
         align = 'center',
         dateRangeInput('dates',
                        label = 'Time Period',
-                       start = Sys.Date() - 3,
+                       start = Sys.Date() - 7,
                        end   = Sys.Date(),
                        max   = Sys.Date(),
                        width = '100%'

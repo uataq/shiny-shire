@@ -1,7 +1,7 @@
 # Ben Fasoli
 source('global.r')
 
-max_rows <- 3000
+max_rows <- 10000
 
 function(input, output, session) {
   
@@ -76,7 +76,7 @@ function(input, output, session) {
         # Subsample data rows
         if (nrow(data) > max_rows) {
           data <- data %>%
-          slice(seq.int(1, n(), length.out = max_rows))
+            slice(seq.int(1, n(), length.out = max_rows))
         }
         data <- arrange(data, Time_UTC)
         attributes(data$Time_UTC)$tzone <- 'America/Denver'
@@ -94,6 +94,13 @@ function(input, output, session) {
           return(NULL)
         }
         
+        if (nrow(.) == max_rows) {
+          showNotification(
+            paste('Observations reduced to', max_rows, 'rows.'),
+            duration = 10,
+            type = 'warning')
+        }
+        
         variables <- data_frame(
           var_name = c('CO2d_ppm_cal', 'CH4d_ppm_cal'),
           short = c('CO2', 'CH4'),
@@ -105,7 +112,7 @@ function(input, output, session) {
           y <- .[[variables$var_name[i]]]
           plot_ly(., x = ~Time_UTC, y = y,
                   name = variables$short[i],
-                  type = 'scatter', mode = 'lines',
+                  type = 'scattergl', mode = 'lines',
                   fill = 'tozeroy',
                   fillcolor = variables$color[i],
                   line = list(color = variables$color[i])) %>%

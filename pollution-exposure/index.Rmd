@@ -1,83 +1,276 @@
 ---
-title: "Pollution Exposure Model"
+title: "PM2.5 Prediction Model"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
+    theme: bootstrap
+    vertical_layout: scroll
 runtime: shiny
 ---
 
 ```{r global, include=FALSE}
+library(data.table)
+library(flexdashboard)
 library(leaflet)
-library(shiny)
-library(tidyverse)
+library(plotly)
 library(raster)
+library(tidyverse)
 library(xgboost)
 
 options(shiny.sanitize.errors = F)
 
-model <- readRDS('/projects/pollution-exposure/xgb_model.web.rds')
-model_cv <- readRDS('/projects/pollution-exposure/xgb_cv.web.rds')
-features_base <- read.csv('/projects/pollution-exposure/data/features.web.csv')
+data <- readRDS('/projects/pollution-exposure/data/processed/dataset.rds')
+model <- readRDS('/projects/pollution-exposure/models/xgb_model.rds')
+model_cv <- readRDS('/projects/pollution-exposure/models/xgb_cv.rds')
+features_base <- readRDS('/projects/pollution-exposure/data/processed/gridded_features.rds')
+
+insitu <- readRDS('/projects/pollution-exposure/data/interim/insitu_geolocated.rds') %>%
+  group_by(Time_UTC = as.Date(Time_UTC)) %>%
+  summarize_all(median, na.rm = T) %>%
+  left_join(features_base, by = c('long_deg', 'lati_deg'))
+need_cols <- setdiff(names(data), names(insitu))
+need_rows <- match(insitu$Time_UTC, data$Time_UTC)
+insitu <- bind_cols(insitu, data[need_rows, need_cols])
+insitu <- insitu[complete.cases(insitu), ]
+
+# TODO: removing july 2016 because of data in QHW data
+insitu <- insitu %>%
+  filter(Time_UTC < as.Date('2016-07-01') | Time_UTC > as.Date('2016-08-01'))
+
+insitu$pred <- predict(model, as.matrix(insitu[, model$feature_names]))
+insitu <- insitu %>%
+  dplyr::select(Time_UTC, PM2.5_ugm3, Predicted = pred)
 ```
 
 Inputs {.sidebar}
------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+
+Choose a date
 
 ```{r}
-sliderInput('month', 'Month', min = 1, max = 12, value = 2, step = 1)
-sliderInput('day_of_week', 'Day of Week', min = 1, max = 7, value = 2, step = 1)
-sliderInput('hour', 'Hour of Day', min = 0, max = 23, value = 14, step = 1)
-sliderInput('vhd', 'Valley Heat Deficit (VHD)', min = 0, max = 10, value = 5, step = 1)
-sliderInput('ivhd', 'Integrated VHD', min = 0, max = 100, value = 50, step = 5)
+dateInput('date', label = NULL,
+          value = as.Date('2016-12-31'),
+          min = min(data$Time_UTC), 
+          max = max(data$Time_UTC))
 ```
 
-Row {.tabset}
------------------------------------------------------------------------
+Visualizations are available for dates containing measurement data for validation purposes.
+
+These results are preliminary and subject to (read: will) change. Questions and comments can be sent to <a href="mailto:bfasoli@utah.edu">Ben Fasoli</a>.
+
+Row
+------------------------------------------------------------------------------------------
+
+### Valley Heat Deficit
+
+```{r}
+renderValueBox({
+  val <- round(unique(features()$vhd), 1)
+  color <- if (val < 4) 'success' else 'danger'
+  valueBox(val, color = color)
+})
+```
+
+### Hours in PCAP
+
+```{r}
+renderValueBox({
+  val <- unique(features()$hvhd)
+  color <- if (val == 0) 'success' else 'danger'
+  valueBox(val, color = color)
+})
+```
+
+### Hawthorne Average
+
+```{r}
+hawthorne_idx <- reactive({
+  idx <- insitu$Time_UTC == input$date
+  validate(need(any(idx), 'Choose different date'))
+  idx
+})
+renderValueBox({
+  val1 <- round(insitu$PM2.5_ugm3[hawthorne_idx()])
+  # val2 <- round(insitu$Predicted[hawthorne_idx()])
+  color <- if (val1 < 10) 'info' else if (val1 >= 10 && val1 <= 55) 'warning' else 'danger'
+  valueBox(val1, color = color)
+})
+```
+
+
+Row {data-height=700}
+------------------------------------------------------------------------------------------
 
 ### Concentration Map
 
 ```{r, warning=FALSE}
-renderLeaflet({
-  if (F) input <- list(month = 1, day_of_week = 1, hour = 10, vhd = 0, ivhd = 1000)
+features <- reactive({
+  if (F) input <- list(date = as.Date('2017-02-01'))
   features <- features_base
-  features$month <- input$month
-  features$day_of_week <- input$day_of_week
-  features$hour <- (input$hour - 7) %% 23
-  features$vhd <- input$vhd
-  features$ivhd <- input$ivhd
-  features$hvhd <- 1
+  
+  month <- as.numeric(format(input$date, '%m'))
+  mos <- c('jan', 'feb', 'mar', 'apr', 'may', 'jun',
+           'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
+  for (i in 1:12) {
+    features[[mos[i]]] <- ifelse(month == i, 1, 0)
+  }
+  
+  dow <- as.numeric(format(input$date, '%u'))
+  features$weekday <- ifelse(dow %in% 1:5, 1, 0)
+  features$sat <- ifelse(dow == 6, 1, 0)
+  features$sun <- ifelse(dow == 7, 1, 0)
+  
+  date_idx <- match(input$date, data$Time_UTC)
+  validate(need(!is.na(date_idx), 'Choose different date'))
+  features$vhd <- data$vhd[date_idx]
+  features$ivhd <- data$ivhd[date_idx]
+  features$hvhd <- data$hvhd[date_idx]
   
   features <- features[, model$feature_names]
   features$pred <- predict(model, as.matrix(features))
+  features$pred[features$pred < 0] <- 0
   
-  features <- bind_cols(features, features_base[, c('long_deg', 'lati_deg')])
+  if (!'lati_deg' %in% names(features)) 
+    features <- cbind(features, features_base[, c('lati_deg', 'long_deg')])
   
-  str(features)
-  
-  r <- features %>%
+  features
+})
+
+generate_raster <- reactive({
+  features() %>%
     dplyr::select(long_deg, lati_deg, pred) %>%
     rasterFromXYZ(crs = '+proj=longlat')
+})
+renderLeaflet({
+  r_base <- generate_raster()
+  r <- r_base
+  res(r) <- 0.001
+  r <- resample(r_base, r, method = 'bilinear')
   
-  # r[r < 0] <- 0
-  # r[r > 100] <- 100
-  # col <- colorNumeric(rev(RColorBrewer::brewer.pal(11, 'Spectral')), 0:50)
-  col <- colorNumeric(c('blue', 'cyan', 'green', 'yellow', 'orange', 'red'), values(r))
+  rng <- range(values(r))
+  rng <- c(10, 75)
+  r[r < rng[1]] <- rng[1]+1
+  r[r > rng[2]] <- rng[2]-1
+
+  
+  # col <- colorNumeric(c('blue', 'cyan', 'green', 'yellow', 'orange', 'red'), rng)
+  # col <- colorNumeric(viridis::viridis(11), rng)
+  col <- colorNumeric(rev(RColorBrewer::brewer.pal(11, 'Spectral')), rng)
   
   leaflet() %>%
-    setView(lng = -111.9, lat = 40.65, zoom = 11) %>%
+    # setView(lng = -111.9, lat = 40.65, zoom = 11) %>%
     addProviderTiles('CartoDB.Positron') %>%
     addRasterImage(r, opacity = 0.3, colors = col) %>%
-    addLegend(pal = col, values = values(r), title = 'ug m-3')
+    addLegend(pal = col, values = rng, title = 'ug m-3')
 })
 ```
 
-### Feature Importance
+
+Row {.tabset}
+------------------------------------------------------------------------------------------
+
+### Result Visualization
+
+```{r}
+pd <- data
+pd$pred <- predict(model, as.matrix(data[, model$feature_names]))
+
+pd <- pd %>%
+  dplyr::select(Time_UTC, Measured = PM2.5_ugm3, Predicted = pred) %>%
+  group_by(Time_UTC) %>%
+  summarize_all(mean, na.rm = T)
+
+fit <- lm(Predicted ~ Measured, data = pd)
+line <- data_frame(
+  x = range(pd$Measured),
+  y = range(fitted(fit))
+)
+
+subplot(
+  subplot(
+    pd %>%
+      gather(key, value, -Time_UTC) %>%
+      plot_ly(x = ~Time_UTC, y = ~value, color = ~key,
+              type = 'scatter', mode = 'lines') %>%
+      layout(legend = list(orientation = 'h'),
+             xaxis = list(title = 'Mountain Time'),
+             yaxis = list(title = 'PM2.5 ug m-3')),
+    pd %>%
+      mutate(Difference = Predicted - Measured) %>%
+      plot_ly(x = ~Time_UTC, y = ~Difference, name = 'Difference',
+              type = 'scatter', mode = 'markers',
+              marker = list(color = '#000')) %>%
+      layout(legend = list(orientation = 'h'),
+             xaxis = list(title = NA),
+             yaxis = list(title = 'Difference')),
+    nrows = 2, shareX = T
+  ),
+  pd %>%
+    plot_ly(x = ~Measured, y = ~Predicted, name = 'PM2.5',
+            type = 'scatter', mode = 'markers',
+            marker = list(
+              color = 'rgba(0, 0, 0, 0.2)',
+              showlegend = F
+            )) %>%
+    add_trace(data = line, x = ~x, y = ~y, mode = 'lines', name = 'Fit',
+              line = list(color = 'red')) %>%
+    add_trace(x = c(0, 100), y = c(0, 100), mode = 'lines', name = '1:1',
+              line = list(color = 'rgba(0, 0, 0, 0.2)')) %>%
+    layout(xaxis = list(title = 'Known'),
+           yaxis = list(title = 'Predicted')),
+  margin = 0.05, nrows = 1, widths = c(0.65, 0.35), titleX = T, titleY = T
+)
+```
+
+### Hawthorne Comparison
+
+```{r}
+fit <- lm(Predicted ~ PM2.5_ugm3, data = insitu)
+line <- data_frame(
+  x = range(insitu$PM2.5_ugm3),
+  y = range(fitted(fit))
+)
+
+subplot(
+  insitu %>%
+    gather(key, value, -Time_UTC) %>%
+    plot_ly(x = ~Time_UTC, y = ~value, color = ~key,
+            type = 'scatter', mode = 'lines') %>%
+    layout(legend = list(orientation = 'h'),
+           xaxis = list(title = NA),
+           yaxis = list(title = 'PM2.5 (ug m-3)')),
+  insitu %>%
+    plot_ly(x = ~PM2.5_ugm3, y = ~Predicted, name = 'PM2.5',
+            type = 'scatter', mode = 'markers',
+            marker = list(
+              color = 'rgba(0, 0, 0, 0.2)',
+              showlegend = F
+            )) %>%
+    add_trace(data = line, x = ~x, y = ~y, mode = 'lines', name = 'Fit',
+              line = list(color = 'red')) %>%
+    add_trace(x = c(0, 100), y = c(0, 100), mode = 'lines', name = '1:1',
+              line = list(color = 'rgba(0, 0, 0, 0.2)')) %>%
+    layout(xaxis = list(title = 'Known'),
+           yaxis = list(title = 'Predicted'),
+           title = paste('R-squared :', round(summary(fit)$r.squared, 2), '<br>',
+                         'RMSE :', round(
+                           sqrt(mean((insitu$PM2.5_ugm3 - fitted(fit))^2, na.rm = T)), 2))),
+  margin = 0.05, nrows = 1, widths = c(0.65, 0.35), titleX = T, titleY = T
+)
+```
+
+
+Row
+------------------------------------------------------------------------------------------
+
+### Importance - Top 30 of `r length(model$feature_names)` Features
 
 ```{r}
 i <- xgb.importance(feature_names = model$feature_names, 
                     model = model, 
-                    trees = NULL)
-ggplot(i, aes(x = Feature, y = Gain, fill = Gain)) +
+                    trees = NULL) %>%
+  head(30)
+f <- ggplot(i, aes(x = Feature, y = Gain, fill = Gain)) +
   geom_bar(stat = 'identity') +
   scale_x_discrete(limits = arrange(i, Gain)$Feature) +
   scale_fill_gradientn(colors = c('blue', 'cyan', 'green', 'yellow', 'orange', 'red'),
@@ -85,12 +278,67 @@ ggplot(i, aes(x = Feature, y = Gain, fill = Gain)) +
   coord_flip() +
   labs(x = NULL, y = 'Total Gain') +
   theme_classic()
+ggplotly(f)
 ```
 
-### Cross Validation Metrics
-
-5-fold cross validation results:
+### Spatial Density Distribution
 
 ```{r}
-model_cv$evaluation_log[model_cv$best_iteration, ]
+renderPlotly({
+  r <- generate_raster()
+  d <- density(values(r))
+  qhw <- insitu$PM2.5_ugm3[hawthorne_idx()]
+  plot_ly(x = ~d$x, y = ~d$y, type = 'scatter', mode = 'lines',
+          fill = 'tozeroy', name = 'Density') %>%
+    add_trace(x = qhw, y = 0, type = 'scatter', mode = 'markers',
+              name = 'Hawthorne') %>%
+    layout(xaxis = list(title = 'PM2.5 (ug m-3)'),
+           yaxis = list(title = 'Density'))
+})
 ```
+
+
+Row
+------------------------------------------------------------------------------------------
+
+### Training Cross Validation
+
+```{r}
+cv <- round(model_cv$evaluation_log[model_cv$best_iteration, ], 2)
+with(model_cv$evaluation_log, 
+     bind_rows(data_frame(x = iter,
+                          y = train_rmse_mean,
+                          ymin = train_rmse_mean - train_rmse_std,
+                          ymax = train_rmse_mean + train_rmse_std,
+                          sd = test_rmse_std,
+                          key = 'train'),
+               data_frame(x = iter,
+                          y = test_rmse_mean,
+                          ymin = test_rmse_mean - test_rmse_std,
+                          ymax = test_rmse_mean + test_rmse_std,
+                          sd = test_rmse_std,
+                          key = 'test'))) %>%
+  plot_ly(x = ~x, y = ~y, color = ~key, 
+          type = 'scatter', mode = 'lines', 
+          error_y = ~list(value = sd,
+                          thickness = 1,
+                          width = 0)) %>%
+  add_trace(x = model_cv$best_iteration, y = 0, inherit = F,
+            name = 'Iterations', type = 'scatter', mode = 'markers',
+            marker = list(color = 'rgba(245, 183, 0, 1)')) %>%
+  layout(title = glue::glue('Test RMSE : {mean} +- {sd}', mean = cv[[4]], sd = cv[[5]]),
+         xaxis = list(title = 'Training Iterations'),
+         yaxis = list(title = 'RMSE'))
+# ggplot(aes(x = x, y = y, ymin = ymin, ymax = ymax, color = key)) +
+# geom_vline(aes(xintercept = model_cv$best_iteration)) +
+# geom_errorbar(alpha = 0.3, width = 0) +
+# geom_line() +
+# theme_classic() + 
+# labs(color = NULL,
+#      title = glue::glue('Test RMSE : {mean} +- {sd}', mean = cv[[4]], sd = cv[[5]]),
+#      x = 'Training Iterations',
+#      y = 'RMSE')
+# ggplotly(f)
+```
+
+

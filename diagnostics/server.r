@@ -1,10 +1,10 @@
 # Ben Fasoli
 source('global.r')
 
-max_rows <- 5000
+max_rows <- 100000
 
 function(input, output, session) {
-
+  
   # Spawn new server processes for disconnected clients
   session$allowReconnect(T)
   
@@ -65,6 +65,7 @@ function(input, output, session) {
       # Read reactive values prior to async call
       column <- input$column
       dates <- as.POSIXct(c(input$dates[1], input$dates[2] + 1))
+      include_atmos <- input$include_atmos
       stid <- input$stid
       future({
         # Base path to find data
@@ -91,6 +92,9 @@ function(input, output, session) {
                  Time_UTC < dates[2],
                  !grepl('-99', ID)) %>%
           na.omit()
+
+        # Optionally remove atmospheric observations
+        if (!include_atmos) data <- filter(data, !grepl('-10', ID))
         
         # Validate that data exist
         if (nrow(data) == 0) return(NULL)
@@ -120,13 +124,19 @@ function(input, output, session) {
           return(NULL)
         }
         
-        .$ID <- as.factor(.$ID)
-        plot_ly(., x = ~Time_UTC, y = .[[column]], name = ~ID, color = ~ID,
-                type = 'scatter', mode = 'markers',
-                marker = list(size = 10, 
-                              line = list(color = 'rgba(255, 255, 255, .3)',
-                                          width = 1),
-                              opacity = 0.8)) %>%
+        if (nrow(.) == max_rows) {
+          showNotification(
+            paste('Observations reduced to', max_rows, 'rows.'),
+            duration = 10,
+            type = 'warning')
+        }
+        
+        . %>%
+          plot_ly(x = ~Time_UTC, y = .[[column]], name = ~ID, color = ~ID,
+                  type = 'scattergl', mode = 'markers',
+                  marker = list(size = 10, 
+                                line = list(color = 'rgba(255, 255, 255, .1)',                                          width = 1),
+                                opacity = 0.8)) %>%
           layout(hovermode = 'compare',
                  legend = list(orientation = 'h'),
                  xaxis = list(title = 'Mountain Time',
