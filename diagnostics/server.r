@@ -92,7 +92,7 @@ function(input, output, session) {
                  Time_UTC < dates[2],
                  !grepl('-99', ID)) %>%
           na.omit()
-
+        
         # Optionally remove atmospheric observations
         if (!include_atmos) data <- filter(data, !grepl('-10', ID))
         
@@ -112,10 +112,11 @@ function(input, output, session) {
         attributes(data$Time_UTC)$tzone <- 'America/Denver'
         data
       }) %...>% {
+        data <- .
         removeNotification('message-loading')
         
         # Validate that data exist
-        if (is.null(.)) {
+        if (is.null(data)) {
           showNotification('No data found. Try a different site or date range.',
                            duration = NULL,
                            closeButton = F,
@@ -124,19 +125,18 @@ function(input, output, session) {
           return(NULL)
         }
         
-        if (nrow(.) == max_rows) {
+        if (nrow(data) == max_rows) {
           showNotification(
             paste('Observations reduced to', max_rows, 'rows.'),
             duration = 10,
             type = 'warning')
         }
         
-        . %>%
-          plot_ly(x = ~Time_UTC, y = .[[column]], name = ~ID, color = ~ID,
-                  type = 'scattergl', mode = 'markers',
-                  marker = list(size = 10, 
-                                line = list(color = 'rgba(255, 255, 255, .1)',                                          width = 1),
-                                opacity = 0.8)) %>%
+        plot_ly(data, x = ~Time_UTC, y = .[[column]], name = ~ID, color = ~ID,
+                type = 'scattergl', mode = 'markers',
+                marker = list(size = 10, 
+                              line = list(color = 'rgba(255, 255, 255, .1)',                                          width = 1),
+                              opacity = 0.8)) %>%
           layout(hovermode = 'compare',
                  legend = list(orientation = 'h'),
                  xaxis = list(title = 'Mountain Time',
