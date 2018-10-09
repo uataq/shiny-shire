@@ -131,12 +131,14 @@ function(input, output, session) {
             duration = 10,
             type = 'warning')
         }
-        
-        plot_ly(data, x = ~Time_UTC, y = .[[column]], name = ~ID, color = ~ID,
-                type = 'scattergl', mode = 'markers',
-                marker = list(size = 10, 
-                              line = list(color = 'rgba(255, 255, 255, .1)',                                          width = 1),
-                              opacity = 0.8)) %>%
+
+        data %>%
+          mutate(ID = as.factor(ID)) %>%
+          plot_ly(x = ~Time_UTC, y = data[[column]], name = ~ID, color = ~ID,
+                  type = 'scattergl', mode = 'markers',
+                  marker = list(size = 10, 
+                                line = list(color = 'rgba(255, 255, 255, .1)',                                          width = 1),
+                                opacity = 0.8)) %>%
           layout(hovermode = 'compare',
                  legend = list(orientation = 'h'),
                  xaxis = list(title = 'Mountain Time',
