@@ -1,0 +1,70 @@
+---
+title: "UATAQ UoU TV Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+runtime: shiny
+---
+
+<style>
+.navbar-header {
+background: red;
+}
+</style>
+
+```{r global, include=FALSE}
+library(jsonlite)
+library(leaflet)
+library(flexdashboard)
+library(plotly)
+library(shiny)
+library(tidyverse)
+
+data_path <- '/var/www/air.utah.edu/_data.rds'
+file <- data_path
+
+refresh_data <- function(file) {
+  # Read QAQC level UATAQ data
+  uataq <- readRDS(file)$qaqc %>%
+    filter(Time_UTC > Sys.time() - 5 * 86400,
+           ID_CO2 == -10) %>%
+    group_by(Time_UTC = as.POSIXct(trunc(Time_UTC, 'hours')),
+             stid) %>%
+    summarize_at(c('CO2d_ppm', 'CH4d_ppm'), mean, na.rm = T)
+  
+  # Grab last 2 hours of UATAQ measurements
+  uataq_current <- uataq %>%
+    group_by(stid) %>%
+    summarize_all(tail, 1)
+  
+  # MesoWest WBB met data
+  api <- fromJSON(paste0('http://api.mesowest.net/v2/stations/latest?',
+                         '&token=cbcb914c5e3a4d14a24e455ac063371f',
+                         '&stids=WBB',
+                         '&vars=wind_speed,air_temp'))
+  met <- data_frame(
+    temp = api$STATION$OBSERVATIONS$air_temp_value_1$value %>%
+      (function(.) . * 1.8 + 32), # F
+    wspd = api$STATION$OBSERVATIONS$wind_speed_value_1$value %>%
+      (function(.) . * 2.23694) # mph
+  )
+  list(uataq = uataq, met = met)
+}
+
+# data <- reactiveFileReader(60e3, session, data_path, refresh_data)
+data <- function() {refresh_data(data_path)}
+str(data())
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Temperature (<sup>o</sup>F)
+
+```{r}
+renderValueBox({
+  flexdashboard::valueBox(data()$met$temp,
+                          icon = icon('thermometer-half'))
+})
+```

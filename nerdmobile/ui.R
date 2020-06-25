@@ -15,9 +15,9 @@ header <- dashboardHeader(title=div(img(src='utelogo.png', height=19), 'ATAQ Lab
 sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem('UATAQ Homepage', href='http://air.utah.edu/', newtab=F, icon=icon('home')),
-    menuItem('Data Processing', tabName='Nerdmobile', icon=icon('car'), selected=T),
-    menuItem('R Source Code', newtab=F, icon=icon('code'),
-             href='https://github.com/benfasoli/shiny-shire/blob/master/view/nerdmobile/src.R')
+    menuItem('Data Processing', tabName='Nerdmobile', icon=icon('car'), selected=T)#,
+    #menuItem('R Source Code', newtab=F, icon=icon('code'),
+     #        href='https://github.com/benfasoli/shiny-shire/blob/master/view/nerdmobile/src.R')
   )
 )
 

@@ -6,7 +6,7 @@ library(leaflet)
 library(xts)
 
 source('src.R')    # for reader, proc, calibrate functions
-options(shiny.maxRequestSize=50*1024^2)
+options(shiny.maxRequestSize=200*1024^2)
 
 # Map and Timeseries Production -----------------------------------------------
 make_figs <- function(geo) {

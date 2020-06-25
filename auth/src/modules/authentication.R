@@ -41,7 +41,7 @@ output$sidebar_auth <- renderMenu({
       menuitems <- c(menuitems, list(
         menuItem('Field Form', icon=icon('bookmark'), tabName='field_form'),
         br(),
-        menuItem('Tank Management', icon=icon('dashboard'), tabName='tank_tracker', selected=T),
+        menuItem('Tank Management', icon=icon('th'), tabName='tank_tracker', selected=T),
         menuItem('Request Tank', icon=icon('envelope'), tabName='request_tank'),
         menuItem('Download Tank Data', icon=icon('download'), tabName='tank_download')))
     }

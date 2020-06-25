@@ -40,6 +40,10 @@ function(req) {
         checkboxInput('include_atmos',
                       label = 'Include Atmosphere',
                       value = T,
+                      width = '100%'),
+        checkboxInput('include_failed_qc',
+                      label = 'Include Failed QC',
+                      value = F,
                       width = '100%')
       ),
       menuItem('Network status', icon = icon('tachometer'),

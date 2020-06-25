@@ -64,8 +64,10 @@ function(input, output, session) {
       
       # Read reactive values prior to async call
       column <- input$column
-      dates <- as.POSIXct(c(input$dates[1], input$dates[2] + 1))
+      dates <- as.POSIXct(c(input$dates[1], input$dates[2] + 1), tz = 'UTC')
       include_atmos <- input$include_atmos
+      include_failed_qc <- input$include_failed_qc
+      
       stid <- input$stid
       future({
         # Base path to find data
@@ -73,8 +75,8 @@ function(input, output, session) {
         path <- file.path(base_path, dir(base_path, pattern = 'licor|lgr'), 'qaqc')[1]
         files_in_path <- dir(path)
         # File selection by date
-        files_by_date <- format(seq(dates[1], dates[2], by = 'month'),
-                                '%Y_%m_qaqc.dat')
+        files_by_date <- unique(format(seq(dates[1], dates[2], by = 'day'),
+                                       '%Y_%m_qaqc.dat'))
         files <- file.path(path, intersect(files_in_path, files_by_date))
         
         # Validate that files exist
@@ -92,6 +94,8 @@ function(input, output, session) {
                  Time_UTC < dates[2],
                  !grepl('-99', ID)) %>%
           na.omit()
+        
+        if (!include_failed_qc) data <- filter(data, QAQC_Flag >= 0)
         
         # Optionally remove atmospheric observations
         if (!include_atmos) data <- filter(data, !grepl('-10', ID))
@@ -131,7 +135,7 @@ function(input, output, session) {
             duration = 10,
             type = 'warning')
         }
-
+        
         data %>%
           mutate(ID = as.factor(ID)) %>%
           plot_ly(x = ~Time_UTC, y = data[[column]], name = ~ID, color = ~ID,

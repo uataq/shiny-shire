@@ -39,7 +39,7 @@ body <- dashboardBody(
                '<input class="form-control shiny-bound-input" id="userpass" type="password" placeholder="Password">',
                '</div>'),
           br(),
-          actionButton('login_button', 'Sign in', icon=icon('sign-in')),
+          actionButton('login_button', 'Sign in', icon=icon('thumbs-up')),
           bsAlert('login_alert')
   ),
   

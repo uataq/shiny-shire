@@ -4,8 +4,6 @@ source('global.r')
 max_rows <- 10000
 
 function(input, output, session) {
-  
-  # Spawn new server processes for disconnected clients
   session$allowReconnect(T)
   
   # Bookmark state with URL props
@@ -49,8 +47,8 @@ function(input, output, session) {
         path <- file.path(base_path, dir(base_path, pattern = 'licor|lgr'), 'calibrated')[1]
         files_in_path <- dir(path)
         # File selection by date
-        files_by_date <- format(seq(dates[1], dates[2], by = 'month'),
-                                '%Y_%m_calibrated.dat')
+        files_by_date <- unique(format(seq(dates[1], dates[2], by = 'day'),
+                                       '%Y_%m_calibrated.dat'))
         files <- file.path(path, intersect(files_in_path, files_by_date))
         
         # Validate that files exist

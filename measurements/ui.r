@@ -13,7 +13,7 @@ function(req) {
   
   sidebar <- dashboardSidebar(
     sidebarMenu(
-      menuItem('Network map', icon = icon('map-marker'),
+      menuItem('Network map', icon = icon('map-marked-alt'),
                href = 'https://air.utah.edu', newtab = F),
       div(
         align = 'center',
@@ -33,7 +33,7 @@ function(req) {
                      label = 'Search',
                      icon = icon('search'))
       ),
-      menuItem('Network status', icon = icon('tachometer'),
+      menuItem('Network status', icon = icon('tachometer-alt'),
                href = 'https://air.utah.edu/status.html', newtab = F),
       menuItem('Diagnostics', icon = icon('wrench'),
                href = 'https://air.utah.edu/s/diagnostics/', newtab = F)
