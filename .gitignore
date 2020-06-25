@@ -8,3 +8,6 @@ egts/grid/raw
 egts/point/raw
 egts/grid/average_stacks.rds
 egts/point/geolocated.rds
+
+service-account.json
+
