@@ -74,7 +74,7 @@ function(input, output, session) {
         # Subsample data rows
         if (nrow(data) > max_rows) {
           data <- data %>%
-            slice(seq.int(1, n(), length.out = max_rows))
+            slice(trunc(seq.int(1, n(), length.out = max_rows)))
         }
         data <- arrange(data, Time_UTC)
         attributes(data$Time_UTC)$tzone <- 'America/Denver'
@@ -98,7 +98,7 @@ function(input, output, session) {
             duration = 10,
             type = 'warning')
         }
-        
+
         variables <- data_frame(
           var_name = c('CO2d_ppm_cal', 'CH4d_ppm_cal'),
           short = c('CO2', 'CH4'),
