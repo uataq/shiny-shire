@@ -12,7 +12,8 @@ KEYS <- list(
   teledyne_t200 = c('no_ppb', 'flow_ccm', 'moly_t_c', 'o3_flow_ccm'),
   teledyne_t500u = c('no2_ppb', 'samp_pres_inhga', 'samp_temp_c'),
   thermo_pdr_1500 = c('pm25_ugm3', 'p_pa', 'rh_pct', 't_c'),
-  vaisala_wxt536 = c('wind_spd_ms', 'wind_dir_deg', 't_c', 'rh_pct', 'p_hpa')
+  vaisala_wxt536 = c('wind_spd_ms', 'wind_dir_deg', 't_c', 'rh_pct', 'p_hpa'),
+  '2b_205' = c('o3_ppb', 't_c', 'flow_ccpm')
 )
 
 GLOBAL_KEYS <- c('time', 'qc')

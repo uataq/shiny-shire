@@ -24,7 +24,8 @@ ui <- function(req) {
                                 'Teledyne T200' = 'teledyne_t200',
                                 'Teledyne T500u' = 'teledyne_t500u',
                                 'Thermo PDR 1500' = 'thermo_pdr_1500',
-                                'Vaisala WXT536' = 'vaisala_wxt536')),
+                                'Vaisala WXT536' = 'vaisala_wxt536',
+                                '2B 205' = '2b_205')),
         
         checkboxInput('hide_qc', 'Hide QC < 0', value = F),
         
