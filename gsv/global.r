@@ -1,0 +1,11 @@
+library(bigrquery)
+library(dplyr)
+library(glue)
+library(googlesheets4)
+library(plotly)
+library(rclipboard)
+library(shiny)
+library(shinycssloaders)
+library(shinydashboard)
+
+enableBookmarking(store = 'url')
