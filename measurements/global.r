@@ -16,8 +16,7 @@ options(shiny.sanitize.errors = F)
 enableBookmarking(store = 'url')
 plan(strategy = multisession)
 
-site_config <- fread(paste0('https://raw.githubusercontent.com/uataq/data-pipeline/',
-                            'master/config/site_config.csv'),
+site_config <- fread('/srv/git-mirror/data-pipeline/config/site_config.csv',
                      showProgress = F)
 
 stids <- site_config$stid
