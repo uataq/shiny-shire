@@ -113,7 +113,8 @@ function(input, output, session) {
           data <- slice(data, idx)
         }
         data <- arrange(data, Time_UTC)
-        attributes(data$Time_UTC)$tzone <- 'America/Denver'
+        # attributes(data$Time_UTC)$tzone <- 'America/Denver'
+        attributes(data$Time_UTC)$tzone <- 'UTC'
         data
       }) %...>% {
         data <- .
@@ -145,7 +146,7 @@ function(input, output, session) {
                                 opacity = 0.8)) %>%
           layout(hovermode = 'compare',
                  legend = list(orientation = 'h'),
-                 xaxis = list(title = 'Mountain Time',
+                 xaxis = list(title = 'UTC',
                               showgrid = F),
                  yaxis = list(showgrid = F,
                               title = gsub('_', ' ', column)))
