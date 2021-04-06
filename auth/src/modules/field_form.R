@@ -2,10 +2,13 @@
 fft <- reactiveValues(refresh=T)
 
 # Reactive - Fetch note list ---------------------------------------------------
-get_notes <- reactive({
-  if (fft$refresh)
-    readRDS( tail( dir('src/notes', full.names=T), 1) )
-})
+# get_notes <- reactive({
+#   if (fft$refresh)
+#     readRDS( tail( dir('src/notes', full.names=T), 1) )
+# })
+get_notes <- function() {
+  readRDS( tail( dir('src/notes', full.names=T), 1) )
+}
 
 # UI - Show nitrogen update bar ------------------------------------------------
 output$note_nitrogen_ui <- renderUI({
@@ -127,14 +130,16 @@ output$ts_note <- renderPlot({
 })
 
 # UI - Datatable of notes ------------------------------------------------------
-output$dt_note <- DT::renderDataTable(server=F, rownames=F,
-                                      extensions=c('Responsive'), {
-  notes <- get_notes()
-  if(input$note_site %in% names(notes)){
-    dt <- notes[[input$note_site]]
-    dt[order(dt$time_in, decreasing=T), ]
-  } else NULL
-})
+output$dt_note <- DT::renderDataTable(
+  server=F, rownames=F, extensions=c('Responsive'), {
+    if (fft$refresh) {
+      notes <- get_notes()
+      if(input$note_site %in% names(notes)){
+        dt <- notes[[input$note_site]]
+        dt[order(dt$time_in, decreasing=T), ]
+      } else NULL
+    }
+  })
 
 # Event - New note save --------------------------------------------------------
 observeEvent(input$note_save, {
@@ -154,10 +159,11 @@ observeEvent(input$note_save, {
                      note = text,
                      name = auth$name)
     
+    print('Adding new note:')
+    print(str(nd))
+    
     notes <- get_notes()
-    temp <- saveRDS(list(n1=notes[[input$note_site]],
-                         n2=input$note_site,
-                         n3=notes), '~/test.rds')
+    
     notes[input$note_site] <- list(bind_rows(notes[[input$note_site]], nd))
     isolate(fft$refresh <- F)
     saveRDS(notes, format(Sys.time(), 'src/notes/%y%m%d_%H%M_notearchive.rds'))
