@@ -28,9 +28,12 @@ output$note_tank_update_ui <- renderUI({
   box(title='Reference Tank Status', solidHeader=T, width=NULL,
       fluidRow(
         column(3, 
-               selectInput('ff_tank_num', h5('Tank Number'), choices=c('', tank_opts)),
-               selectInput('ff_tank_location', h5('Location'), choices=c('', loc_opts))),
-        column(8, sliderInput('ff_tank_psi', h5('Pressure (psi)'), min=0, max=2500, step=50, value=2200))),
+               selectInput('ff_tank_num', h5('Tank Number'), 
+                           choices=c('', tank_opts)),
+               selectInput('ff_tank_location', h5('Location'), 
+                           choices=c('', loc_opts))),
+        column(8, sliderInput('ff_tank_psi', h5('Pressure (psi)'),
+                              min=0, max=2500, step=50, value=2200))),
       fluidRow(
         column(3, actionButton('ff_tank_save', 'Submit', icon=icon('pencil-square-o'))),
         column(9, bsAlert('fftanksave_alert'))))
@@ -45,7 +48,8 @@ output$site_status <- renderUI({
     lt <- get_notes()[[input$note_site]] %>%
       .$time_out %>%
       max(na.rm=T)
-    T_info <- infoBox('Last updated', format(lt, format='%Y-%m-%d\n %H:%M %Z', tz='America/Denver'), 
+    T_info <- infoBox('Last updated',
+                      format(lt, format='%Y-%m-%d\n %H:%M %Z', tz='America/Denver'), 
                       color='yellow', fill=F, icon=icon('calendar', lib='glyphicon'))
     
     # Find lowest tank pressure
@@ -53,8 +57,9 @@ output$site_status <- renderUI({
       lapply(tail, n=1)
     mask <- tanks %>%
       lapply(site=input$note_site, function(tid, site) {
-        if (!is.na(tid$Location) && tid$Location == site) return(T)
-        else return(F)
+        if (!is.na(tid$Location) && tolower(tid$Location) == tolower(site)) {
+          return(T)
+        } else return(F)
       }) %>%
       unlist()
     tanks_onsite <- tanks[mask] %>%
@@ -95,26 +100,30 @@ output$ts_note <- renderPlot({
     mask <- tanks %>%
       lapply(site=input$note_site, function(tid, site) {
         loc <- tail(tid$Location, 1)
-        if (!is.na(loc) && loc == site) return(T)
-        else return(F)
+        if (!is.na(loc) && tolower(loc) == tolower(site)) {
+          return(T)
+        } else return(F)
       }) %>%
       unlist()
     if (!any(mask)) return()
     tanks_onsite <- tanks[mask] %>%
       bind_rows() %>%
       mutate(Num = gsub('.*_', '', ID)) %>%
-      filter(Location == input$note_site)  %>%
+      filter(tolower(Location) == tolower(input$note_site))  %>%
       select(Time, Pressure, Num)
     
     notes <- get_notes()[[input$note_site]]
     ln <- tail(notes, 1)
     if(!is.null(ln$n2_psi) && !is.na(ln$n2_psi)){
       tanks_onsite <- bind_rows(tanks_onsite, 
-                                data_frame(Time=notes$time_out,
-                                           Pressure=notes$n2_psi,
-                                           Num='N2'))
+                                tibble(Time=notes$time_out,
+                                       Pressure=notes$n2_psi,
+                                       Num='N2'))
     }
-    tanks_onsite <- na.omit(tanks_onsite)
+    tanks_onsite <- tanks_onsite %>%
+      filter(Time > (Sys.time() - 86400 * 30 * 6)) %>%
+      na.omit()
+      
     if(nrow(tanks_onsite) > 0){
       f <- qplot(data=tanks_onsite, x=Time, y=Pressure,
                  color=factor(Num), xmin=Sys.time()-60*60*24*365) +
@@ -153,11 +162,11 @@ observeEvent(input$note_save, {
   if (nchar(text) < 1) text <- NA
   
   if (!is.na(time_in) && !is.na(time_out)) {
-    nd <- data_frame(time_in = time_in,
-                     time_out = time_out,
-                     n2_psi = n2_psi,
-                     note = text,
-                     name = auth$name)
+    nd <- tibble(time_in = time_in,
+                 time_out = time_out,
+                 n2_psi = n2_psi,
+                 note = text,
+                 name = auth$name)
     
     print('Adding new note:')
     print(str(nd))
@@ -170,7 +179,8 @@ observeEvent(input$note_save, {
     isolate(fft$refresh <- T)
     
     updateTextInput(session, 'note_text', value='')
-    updateTextInput(session, 'note_time', value=format(Sys.time(), '%Y-%m-%d %H:%M %Z', tz='UTC'))
+    updateTextInput(session, 'note_time', 
+                    value=format(Sys.time(), '%Y-%m-%d %H:%M %Z', tz='UTC'))
     
     closeAlert(session, 'f1')
     createAlert(session, 'ffsave_alert', 'f1', style='success',
@@ -188,13 +198,14 @@ observeEvent(input$ff_tank_save, {
   tank <- input$ff_tank_num
   if (!is.null(tank) && nchar(tank) > 0) {
     tanks <- get_tanks()
-    d <- data_frame(Time = Sys.time(), 
-                    Pressure = as.numeric(input$ff_tank_psi), 
-                    Location = input$ff_tank_location,
-                    Name = auth$name)
+    d <- tibble(Time = Sys.time(), 
+                Pressure = as.numeric(input$ff_tank_psi), 
+                Location = input$ff_tank_location,
+                Name = auth$name)
     d[nchar(d) < 1] <- NA
     if(tank %in% names(tanks)){
-      for (column in grep('Note', names(tanks[[tank]]), value=T, fixed=T, invert=T)) {
+      for (column in grep('Note', names(tanks[[tank]]),
+                          value=T, fixed=T, invert=T)) {
         if (!(column %in% names(d))) {
           d[column] <- tail(tanks[[tank]], 1)[column]
         }
