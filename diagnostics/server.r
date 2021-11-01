@@ -25,7 +25,7 @@ function(input, output, session) {
   # Fetch column options for given site
   columns <- reactive({
     if (nchar(input$stid) < 3) return('')
-    base_path <- file.path('/projects/data', input$stid)
+    base_path <- file.path('/data', input$stid)
     path <- file.path(base_path, dir(base_path, pattern = 'licor|lgr'), 'qaqc')[1]
     file <- dir(path, full.names = T)[1]
     header <- strsplit(readLines(file, n = 1), ',')[[1]]
@@ -71,7 +71,7 @@ function(input, output, session) {
       stid <- input$stid
       future({
         # Base path to find data
-        base_path <- file.path('/projects/data', stid)
+        base_path <- file.path('/data', stid)
         path <- file.path(base_path, dir(base_path, pattern = 'licor|lgr'), 'qaqc')[1]
         files_in_path <- dir(path)
         # File selection by date

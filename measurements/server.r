@@ -43,7 +43,7 @@ function(input, output, session) {
       stid <- input$stid
       future({
         # Base path to find data
-        base_path <- file.path('/projects/data', stid)
+        base_path <- file.path('/data', stid)
         path <- file.path(base_path, dir(base_path, pattern = 'licor|lgr'), 'calibrated')[1]
         files_in_path <- dir(path)
         # File selection by date

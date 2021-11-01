@@ -1,0 +1,15 @@
+services:
+  shiny_server:
+    container_name: shiny_server
+    build: .
+    ports:
+      - 3838:3838
+    restart: always
+    user: 'root'
+    volumes:
+      - /srv/shiny-server:/srv/shiny-server:ro
+      - /data:/data:ro
+      - shiny_server_logs:/var/log:rw
+
+volumes:
+  shiny_server_logs:
