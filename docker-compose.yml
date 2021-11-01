@@ -9,7 +9,4 @@ services:
     volumes:
       - /srv/shiny-server:/srv/shiny-server:ro
       - /data:/data:ro
-      - shiny_server_logs:/var/log:rw
-
-volumes:
-  shiny_server_logs:
+      - /var/log/shiny-server:/var/log/shiny-server:rw

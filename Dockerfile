@@ -19,8 +19,6 @@ RUN apt-get update \
     && update-locale \
     && rm -rf /var/lib/apt/lists/*
 
-RUN Rscript -e 'update.packages()'
-
 RUN Rscript -e 'install.packages(c(\
     "data.table",\
     "devtools",\
