@@ -4,11 +4,7 @@ source('global.r')
 function(req) {
   
   header <- dashboardHeader(
-    title = tags$span(
-      HTML('<img src="https://air.utah.edu/~benfasoli/img/utelogo.png" 
-              style="height: 20px; position: relative; bottom: 1px;">
-              ATAQ Lab')
-    )
+    title = 'UATAQ'
   )
   
   sidebar <- dashboardSidebar(
@@ -46,7 +42,7 @@ function(req) {
                       value = F,
                       width = '100%')
       ),
-      menuItem('Network status', icon = icon('tachometer'),
+      menuItem('Network status', icon = icon('tachometer-alt'),
                href = 'https://air.utah.edu/status.html', newtab = F),
       menuItem('Calibrated data', icon = icon('check'),
                href = 'https://air.utah.edu/s/measurements/', newtab = F)
