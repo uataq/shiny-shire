@@ -95,7 +95,7 @@ function(input, output, session) {
                  !grepl('-99', ID)) %>%
           na.omit()
         
-        if (!include_failed_qc) data <- filter(data, QAQC_Flag >= 0)
+        if (!include_failed_qc) data <- filter(data, QAQC_Flag >= 0 | QAQC_Flag == -9)
         
         # Optionally remove atmospheric observations
         if (!include_atmos) data <- filter(data, !grepl('-10', ID))
