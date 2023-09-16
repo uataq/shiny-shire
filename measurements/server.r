@@ -44,12 +44,12 @@ function(input, output, session) {
       future({
         # Base path to find data
         base_path <- file.path('/data', stid)
-        path <- file.path(base_path, dir(base_path, pattern = 'licor|lgr'), 'calibrated')[1]
-        files_in_path <- dir(path)
+        paths <- file.path(base_path, dir(base_path, pattern = 'licor|lgr'), 'calibrated')
+        files_in_paths <- dir(paths)
         # File selection by date
         files_by_date <- unique(format(seq(dates[1], dates[2], by = 'day'),
                                        '%Y_%m_calibrated.dat'))
-        files <- file.path(path, intersect(files_in_path, files_by_date))
+        files <- files_in_paths[grep(paste(files_by_date, collapse='|'), files_in_paths)]
         
         # Validate that files exist
         if (length(files) == 0) return(NULL)

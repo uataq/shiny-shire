@@ -26,9 +26,13 @@ function(input, output, session) {
   columns <- reactive({
     if (nchar(input$stid) < 3) return('')
     base_path <- file.path('/data', input$stid)
-    path <- file.path(base_path, dir(base_path, pattern = 'licor|lgr'), 'qaqc')[1]
-    file <- dir(path, full.names = T)[1]
-    header <- strsplit(readLines(file, n = 1), ',')[[1]]
+    paths <- file.path(base_path, dir(base_path, pattern = 'licor|lgr'), 'qaqc')
+    headers <- lapply(paths, function(path) {
+      file <- dir(path, full.names = T)[1]
+      header <- strsplit(readLines(file, n = 1), ',')[[1]]
+      return(header)
+    })
+    header <- unique(unlist(headers))
     not_options <- c('Time_UTC', 'ID', 'ID_CO2', 'ID_CH4', 'Program', 'QAQC_Flag')
     header <- c('', setdiff(header, not_options))
     setNames(header, gsub('_', ' ', header))
@@ -72,12 +76,12 @@ function(input, output, session) {
       future({
         # Base path to find data
         base_path <- file.path('/data', stid)
-        path <- file.path(base_path, dir(base_path, pattern = 'licor|lgr'), 'qaqc')[1]
-        files_in_path <- dir(path)
+        paths <- file.path(base_path, dir(base_path, pattern = 'licor|lgr'), 'qaqc')
+        files_in_paths <- dir(paths)
         # File selection by date
         files_by_date <- unique(format(seq(dates[1], dates[2], by = 'day'),
                                        '%Y_%m_qaqc.dat'))
-        files <- file.path(path, intersect(files_in_path, files_by_date))
+        files <- files_in_paths[grep(paste(files_by_date, collapse='|'), files_in_paths)]
         
         # Validate that files exist
         if (length(files) == 0) return(NULL)
