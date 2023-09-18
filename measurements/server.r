@@ -45,7 +45,7 @@ function(input, output, session) {
         # Base path to find data
         base_path <- file.path('/data', stid)
         paths <- file.path(base_path, dir(base_path, pattern = 'licor|lgr'), 'calibrated')
-        files_in_paths <- dir(paths)
+        files_in_paths <- list.files(paths, full.names=T)
         # File selection by date
         files_by_date <- unique(format(seq(dates[1], dates[2], by = 'day'),
                                        '%Y_%m_calibrated.dat'))
