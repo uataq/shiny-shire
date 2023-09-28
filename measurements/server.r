@@ -5,7 +5,7 @@ max_rows <- 10000
 
 function(input, output, session) {
   session$allowReconnect(T)
-  
+
   # Bookmark state with URL props
   observe({
     reactiveValuesToList(input)
@@ -14,7 +14,7 @@ function(input, output, session) {
   onBookmarked(function(url) {
     updateQueryString(url)
   })
-  
+
   output$plot <- renderPlotly({
     # Execute isolated expression on submit button
     input$submit
@@ -30,30 +30,30 @@ function(input, output, session) {
                          id = 'message-select-site')
         return(NULL)
       }
-      
+
       # Search files and load data
       showNotification('Fetching data...',
                        duration = NULL,
                        closeButton = F,
                        type = 'message',
                        id = 'message-loading')
-      
+
       # Read reactive values prior to async call
       dates <- as.POSIXct(c(input$dates[1], input$dates[2] + 1))
       stid <- input$stid
       future({
         # Base path to find data
         base_path <- file.path('/data', stid)
-        paths <- file.path(base_path, dir(base_path, pattern = 'licor|lgr'), 'calibrated')
+        paths <- file.path(base_path, dir(base_path, pattern = instrument_regex), 'calibrated')
         files_in_paths <- list.files(paths, full.names=T)
         # File selection by date
         files_by_date <- unique(format(seq(dates[1], dates[2], by = 'day'),
                                        '%Y_%m_calibrated.dat'))
         files <- files_in_paths[grep(paste(files_by_date, collapse='|'), files_in_paths)]
-        
+
         # Validate that files exist
         if (length(files) == 0) return(NULL)
-        
+
         # Read data from matched files
         data <- rbindlist(lapply(files, function(file) {
           suppressWarnings(
@@ -67,10 +67,10 @@ function(input, output, session) {
                  ID_CO2 == -10) %>%
           select(-ID_CO2) %>%
           na.omit()
-        
+
         # Validate that data exist
         if (nrow(data) == 0) return(NULL)
-        
+
         # Subsample data rows
         if (nrow(data) > max_rows) {
           data <- data %>%
@@ -81,7 +81,7 @@ function(input, output, session) {
         data
       }) %...>% {
         removeNotification('message-loading')
-        
+
         # Validate that data exist
         if (is.null(.)) {
           showNotification('No data found. Try a different site or date range.',
@@ -91,7 +91,7 @@ function(input, output, session) {
                            id = 'message-no-data')
           return(NULL)
         }
-        
+
         if (nrow(.) == max_rows) {
           showNotification(
             paste('Observations reduced to', max_rows, 'rows.'),
