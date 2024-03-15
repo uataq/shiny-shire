@@ -1,7 +1,10 @@
-# Ben Fasoli
+# Ben Fasoli & James Mineau
 source('global.r')
 
 max_rows <- 100000
+
+invalid_columns <- c('Time_UTC', 'Pi_Time', 'ID', 'ID_CO2', 'ID_CH4',
+                     'Program', 'Fix_Quality', 'Status', 'QAQC_Flag')
 
 function(input, output, session) {
 
@@ -17,30 +20,73 @@ function(input, output, session) {
     updateQueryString(url)
   })
   onRestored(function(state) {
+    updateSelectInput(session, 'instrument',
+                      selected = state$input$instrument,
+                      choices = instruments())
+
+    updateSelectInput(session, 'lvl',
+                      selected = state$input$lvl,
+                      choices = lvls())
+
     updateSelectInput(session, 'column',
                       selected = state$input$column,
                       choices = columns())
   })
 
-  # Fetch column options for given site
-  columns <- reactive({
+  # Fetch instrument options for given site
+  instruments <- reactive({
     if (nchar(input$stid) < 3) return('')
     base_path <- file.path('/data', input$stid)
-    paths <- file.path(base_path, dir(base_path, pattern = instrument_regex), 'qaqc')
-    headers <- lapply(paths, function(path) {
-      file <- dir(path, full.names = T)[1]
-      header <- strsplit(readLines(file, n = 1), ',')[[1]]
-      return(header)
-    })
-    header <- unique(unlist(headers))
-    not_options <- c('Time_UTC', 'ID', 'ID_CO2', 'ID_CH4', 'Program', 'QAQC_Flag')
-    header <- c('', setdiff(header, not_options))
+    insts <- list.dirs(base_path, full.names = T) %>%
+      .[file.exists(file.path(., 'qaqc'))] %>%
+      basename()
+    insts <- c('', insts)
+    setNames(insts, gsub('_', ' ', insts))
+  })
+
+  # Fetch diagnostic level options for given site - instrument combination
+  lvls <- reactive({
+    if (nchar(input$stid) < 3 | nchar(input$instrument) == 0) return('')
+    instrument_dir <- file.path('/data', input$stid, input$instrument)
+    if (file.exists(file.path(instrument_dir, 'calibrated'))) {
+      c('qaqc', 'calibrated')
+    } else {
+      c('qaqc')
+    }
+  })
+
+  # Fetch column options for given site - instrument - lvl combination
+  columns <- reactive({
+    if (nchar(input$stid) < 3 | nchar(input$instrument) == 0 | nchar(input$lvl) == 0) return('')
+    data_dir <- file.path('/data', input$stid, input$instrument, input$lvl)
+    header <- strsplit(readLines(dir(data_dir, full.names = T)[1],
+                                 n = 1), ',')[[1]]
+    header <- unique(unlist(header))
+    header <- c('', setdiff(header, invalid_columns))
     setNames(header, gsub('_', ' ', header))
   })
 
-  # On stid change, ensure column options are up to date
+  # On stid change, ensure instrument, lvl, & column options are up to date
   observeEvent(input$stid, {
+    updateSelectInput(session, 'instrument', choices = instruments())
+  })
+
+  # On instrument change, ensure lvl & column options are up to date
+  observeEvent(input$instrument, {
+    updateSelectInput(session, 'lvl', choices = lvls())
     updateSelectInput(session, 'column', choices = columns())
+  })
+
+  # On lvl change, ensure column options are up to date
+  observeEvent(input$lvl, {
+    updateSelectInput(session, 'column', choices = columns())
+  })
+
+  # If remove_failed_qc is checked, color_by is changed to ID
+  observeEvent(input$remove_failed_qc, {
+    if (input$remove_failed_qc) {
+      updateRadioButtons(session, 'color_by', selected = 'ID')
+    }
   })
 
   output$plot <- renderPlotly({
@@ -50,7 +96,8 @@ function(input, output, session) {
       removeNotification('message-no-data')
       removeNotification('message-select-data')
       # Validate that a site has been selected
-      if (nchar(input$column) == 0 | nchar(input$stid) < 3 | input$submit == 0) {
+      if (nchar(input$instrument) == 0 | nchar(input$column) == 0
+          | nchar(input$lvl) == 0 | nchar(input$stid) < 3 | input$submit == 0) {
         showNotification('Select a dataset to load.',
                          duration = NULL,
                          closeButton = F,
@@ -67,21 +114,23 @@ function(input, output, session) {
                        id = 'message-loading')
 
       # Read reactive values prior to async call
+      stid <- input$stid
+      instrument <- input$instrument
+      lvl <- input$lvl
       column <- input$column
       dates <- as.POSIXct(c(input$dates[1], input$dates[2] + 1), tz = 'UTC')
-      include_atmos <- input$include_atmos
-      include_failed_qc <- input$include_failed_qc
+      remove_failed_qc <- input$remove_failed_qc
+      color_by <- input$color_by
 
-      stid <- input$stid
       future({
-        # Base path to find data
-        base_path <- file.path('/data', stid)
-        paths <- file.path(base_path, dir(base_path, pattern = instrument_regex), 'qaqc')
-        files_in_paths <- list.files(paths, full.names=T)
-        # File selection by date
+        data_dir <- file.path('/data', stid, instrument, lvl)
+
+        # Identify intersection of files and dates
+        files_in_paths <- list.files(data_dir, full.names = T)
         files_by_date <- unique(format(seq(dates[1], dates[2], by = 'day'),
-                                       '%Y_%m_qaqc.dat'))
-        files <- files_in_paths[grep(paste(files_by_date, collapse='|'), files_in_paths)]
+                                       paste0('%Y_%m_', lvl, '.dat')))
+        files <- files_in_paths[grep(paste(files_by_date, collapse = '|'),
+                                     files_in_paths)]
 
         # Validate that files exist
         if (length(files) == 0) return(NULL)
@@ -90,36 +139,48 @@ function(input, output, session) {
         data <- rbindlist(lapply(files, function(file) {
           suppressWarnings(
             fread(file, showProgress = F, data.table = F,
-                  select = c('Time_UTC', column, 'ID', 'QAQC_Flag'))
+                  select = c('Time_UTC', column, 'QAQC_Flag',
+                             'ID', 'ID_CO2', 'ID_CH4'))  # ID cols for cals
           )
         })) %>%
           mutate(Time_UTC = fastPOSIXct(Time_UTC, tz = 'UTC')) %>%
           filter(Time_UTC >= dates[1],
-                 Time_UTC < dates[2],
-                 !grepl('-99', ID)) %>%
+                 Time_UTC < dates[2]) %>%
           na.omit()
 
-        if (!include_failed_qc) data <- filter(data, QAQC_Flag >= 0 | QAQC_Flag == -9)
+        if (lvl == 'calibrated') {
+          if ('ID_CH4' %in% colnames(data)) {
+            # rebuild ID from ID_CO2 and ID_CH4
+            data <- data %>%
+              mutate(ID = paste(ID_CO2, ID_CH4, sep = '~')) %>%
+              select(-ID_CO2, -ID_CH4)
+          } else {
+            data <- data %>%
+              rename(ID = ID_CO2)
+          }
+        }
 
-        # Optionally remove atmospheric observations
-        if (!include_atmos) data <- filter(data, !grepl('-10', ID))
+        # Filter flushing observations
+        if ('ID' %in% colnames(data)) {
+          data <- data[!grepl('flush|-99', data$ID), ]
+        }
+
+        # Filter failed QAQC observations
+        if (remove_failed_qc) data <- filter(data, QAQC_Flag >= 0)
 
         # Validate that data exist
         if (nrow(data) == 0) return(NULL)
 
         # Subsample data rows
         if (nrow(data) > max_rows) {
-          ref_idx <- grep('-10', data$ID, invert = T)
-          idx <- union(
-            trunc(seq.int(1, nrow(data), length.out = max(0, max_rows - length(ref_idx)))),
-            ref_idx
-          )
-          data <- slice(data, idx)
+          data <- data %>%
+            slice(trunc(seq.int(1, n(), length.out = max_rows)))
         }
+
         data <- arrange(data, Time_UTC)
-        # attributes(data$Time_UTC)$tzone <- 'America/Denver'
         attributes(data$Time_UTC)$tzone <- 'UTC'
-        data
+
+        return(data)
       }) %...>% {
         data <- .
         removeNotification('message-loading')
@@ -141,12 +202,22 @@ function(input, output, session) {
             type = 'warning')
         }
 
+        if (color_by == 'ID' && !('ID' %in% colnames(data))) {
+          # Add atmospheric ID column
+          message(paste('adding ID to', stid, instrument, lvl))
+          data$ID <- 'atmosphere'
+        }
+
+        data[[color_by]] <- as.factor(data[[color_by]])
+
         data %>%
-          mutate(ID = as.factor(ID)) %>%
-          plot_ly(x = ~Time_UTC, y = data[[column]], name = ~ID, color = ~ID,
+          plot_ly(x = ~Time_UTC, y = data[[column]],
+                  name = data[[color_by]], color = data[[color_by]],
                   type = 'scattergl', mode = 'markers',
-                  marker = list(size = 10, 
-                                line = list(color = 'rgba(255, 255, 255, .1)',                                          width = 1),
+                  colors = c('#F18F01', '#009FB7', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#E377C2', '#7F7F7F'),
+                  marker = list(size = 10,
+                                line = list(color = 'rgba(255, 255, 255, .1)',
+                                            width = 1),
                                 opacity = 0.8)) %>%
           layout(hovermode = 'compare',
                  legend = list(orientation = 'h'),

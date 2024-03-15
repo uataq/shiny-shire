@@ -4,13 +4,14 @@ source('global.r')
 function(req) {
   
   header <- dashboardHeader(
-    title = 'UATAQ'
+    title = div(a(img(src='https://air.utah.edu/img/utelogo.png', height=19),
+                'ATAQ',
+                href='http://air.utah.edu',
+                style = "color: rgb(68, 68, 68);"))
   )
   
   sidebar <- dashboardSidebar(
     sidebarMenu(
-      menuItem('Network map', icon = icon('map-marker'),
-               href = 'https://air.utah.edu', newtab = F),
       div(
         align = 'center',
         dateRangeInput('dates',
@@ -28,11 +29,7 @@ function(req) {
         actionButton('submit',
                      label = 'Search',
                      icon = icon('search'))
-      ),
-      menuItem('Network status', icon = icon('tachometer-alt'),
-               href = 'https://air.utah.edu/status.html', newtab = F),
-      menuItem('Diagnostics', icon = icon('wrench'),
-               href = 'https://air.utah.edu/s/diagnostics/', newtab = F)
+      )
     )
   )
   

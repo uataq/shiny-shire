@@ -1,16 +1,17 @@
-# Ben Fasoli
+# Ben Fasoli and James Mineau
 source('global.r')
 
 function(req) {
   
   header <- dashboardHeader(
-    title = 'UATAQ'
+    title = div(a(img(src='https://air.utah.edu/img/utelogo.png', height=19),
+                'ATAQ',
+                href='http://air.utah.edu',
+                style = "color: rgb(68, 68, 68);"))
   )
   
   sidebar <- dashboardSidebar(
     sidebarMenu(
-      menuItem('Network map', icon = icon('map-marker'),
-               href = 'https://air.utah.edu', newtab = F),
       div(
         align = 'center',
         dateRangeInput('dates',
@@ -25,6 +26,16 @@ function(req) {
                     choices = c('', stids),
                     width = '100%'
         ),
+        selectInput('instrument',
+                    label = 'Instrument',
+                    choices = '',
+                    width = '100%'
+        ),
+        selectInput('lvl',
+                    label = 'Diagnostic Level',
+                    choices = '',
+                    width = '100%'
+        ),
         selectInput('column',
                     label = 'Data Options',
                     choices = '',
@@ -32,23 +43,23 @@ function(req) {
         ),
         actionButton('submit',
                      label = 'Search',
-                     icon = icon('search')),
-        checkboxInput('include_atmos',
-                      label = 'Include Atmosphere',
-                      value = T,
-                      width = '100%'),
-        checkboxInput('include_failed_qc',
-                      label = 'Include Failed QC',
+                     icon = icon('search')
+                     ),
+        checkboxInput('remove_failed_qc',
+                      label = 'Remove Failed QC',
                       value = F,
-                      width = '100%')
-      ),
-      menuItem('Network status', icon = icon('tachometer-alt'),
-               href = 'https://air.utah.edu/status.html', newtab = F),
-      menuItem('Calibrated data', icon = icon('check'),
-               href = 'https://air.utah.edu/s/measurements/', newtab = F)
+                      width = '100%'
+                      ),
+        radioButtons('color_by',
+                      label = 'Color By',
+                      choices = list('QAQC Flag' = 'QAQC_Flag', 
+                                     'ID' = 'ID'),
+                      selected = 'QAQC_Flag',
+                      inline = T, width = '100%')
+      )
     )
   )
-  
+
   body <- dashboardBody(
     includeStyle <- tagList(
       includeHTML('_header.html'),
@@ -64,9 +75,7 @@ function(req) {
       type = 8
     )
   )
-  
-  
+
   dashboardPage(title = 'UATAQ Diagnostics', skin = 'black',
                 header, sidebar, body)
 }
-
