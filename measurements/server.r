@@ -132,7 +132,7 @@ function(input, output, session) {
         cal_vars <- grep("_cal$", variables$var_name, value = TRUE)
         for (var in cal_vars) {
           if (all(is.na(.[[var]]))) {
-            new_var <- sub("_cal$", "q", var)
+            new_var <- sub("_cal$", "_raw", var)
             variables[variables$var_name == var, 'var_name'] <- new_var
           }
         }
