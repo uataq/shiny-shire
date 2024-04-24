@@ -1,5 +1,5 @@
 # Ben Fasoli & James Mineau
-source('global.r')
+suppressPackageStartupMessages(source('global.r'))
 
 max_rows <- 100000
 

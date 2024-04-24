@@ -1,5 +1,5 @@
 # Ben Fasoli & James Mineau
-source('global.r')
+suppressPackageStartupMessages(source('global.r'))
 
 max_rows <- 10000
 
@@ -39,7 +39,8 @@ function(input, output, session) {
                        id = 'message-loading')
 
       # Read reactive values prior to async call
-      dates <- as.POSIXct(c(input$dates[1], input$dates[2] + 1))
+      dates <- as.POSIXct(c(input$dates[1], input$dates[2] + 1),
+                          tz = 'America/Denver')
       stid <- input$stid
       future({
         # Directory with site data
@@ -50,7 +51,7 @@ function(input, output, session) {
           .[file.exists(file.path(., 'final'))] %>%
           basename()
 
-        data <- lapply(instruments, function(instrument) {
+        data <- rbindlist(lapply(instruments, function(instrument) {
           # File paths in final directory
           path <- file.path(site_dir, instrument, 'final')
           files_in_path <- list.files(path, full.names = T)
@@ -69,14 +70,17 @@ function(input, output, session) {
             suppressWarnings(
               fread(file, showProgress = F, data.table = F)
             )
-          })) %>%
+          }))
+
+          # Validate that data exist
+          if (is.null(data) || nrow(data) == 0) return(NULL)
+
+          # Format and filter time
+          data <- data %>%
             mutate(Time_UTC = fastPOSIXct(Time_UTC, tz = 'UTC')) %>%
             filter(Time_UTC >= dates[1],
                    Time_UTC < dates[2]) %>%
             na.omit()
-
-          # Validate that data exist
-          if (nrow(data) == 0) return(NULL)
 
           # Subsample data rows
           if (nrow(data) > max_rows) {
@@ -84,18 +88,14 @@ function(input, output, session) {
               slice(trunc(seq.int(1, n(), length.out = max_rows)))
           }
 
-          data <- arrange(data, Time_UTC)
           attributes(data$Time_UTC)$tzone <- 'America/Denver'
 
           return(data)
-        }) %>%
-          purrr::discard(is.null) %>%
-          purrr::reduce(full_join, by = 'Time_UTC') %>%
-          arrange(Time_UTC)
+        }), fill = T)
 
-        if (nrow(data) == 0) return(NULL)
+        if (is.null(data) || nrow(data) == 0) return(NULL)
 
-        return(data)
+        return(arrange(data, Time_UTC))
       }) %...>% {
         removeNotification('message-loading')
 
@@ -117,27 +117,30 @@ function(input, output, session) {
         }
 
         variables <- tribble(
-          ~var_name, ~short, ~long, ~color,
-          'CO2d_ppm_cal', 'CO2',   'Carbon Dioxide (ppm)',                                'rgba(241, 143, 1, 0.5)',
-          'CH4d_ppm_cal', 'CH4',   'Methane (ppm)',                                       'rgba(0, 159, 183, 0.5)',
-          'O3_ppb',       'O3',    'Ozone (ppb)',                                         'rgba(44, 160, 44, 0.5)',
-          'NO2_ppb',      'NO2',   'Nitrogen Dioxide (ppb)',                              'rgba(214, 39, 40, 0.5)',
-          'NO_ppb',       'NO',    'Nitric Oxide (ppb)',                                  'rgba(148, 103, 189, 0.5)',
-          'PM2.5_ugm3',   'PM2.5', 'Particulate Matter<sub>2.5</sub> (μg/m<sup>3</sup>)', 'rgba(140, 86, 75, 0.5)',
-          'CO_ppb',       'CO',    'Carbon Monoxide (ppb)',                               'rgba(227, 119, 194, 0.5)',
-          'BC6_ngm3',     'BC',    'Black Carbon (ng/m<sup>3</sup>)',                     'rgba(127, 127, 127, 0.5)'
+          ~var_name,      ~short,  ~long,                              ~units,             ~color,
+          'CO2d_ppm_cal', 'CO2',   'Carbon Dioxide',                   'ppm',              'rgba(241, 143, 1, 0.5)',
+          'CH4d_ppm_cal', 'CH4',   'Methane',                          'ppm',              'rgba(0, 159, 183, 0.5)',
+          'O3_ppb',       'O3',    'Ozone',                            'ppb',              'rgba(44, 160, 44, 0.5)',
+          'NO2_ppb',      'NO2',   'Nitrogen Dioxide',                 'ppb',              'rgba(214, 39, 40, 0.5)',
+          'NO_ppb',       'NO',    'Nitric Oxide',                     'ppb',              'rgba(148, 103, 189, 0.5)',
+          'PM2.5_ugm3',   'PM2.5', 'Particulate Matter<sub>2.5</sub>', 'μg/m<sup>3</sup>', 'rgba(140, 86, 75, 0.5)',
+          'CO_ppb',       'CO',    'Carbon Monoxide',                  'ppb',              'rgba(227, 119, 194, 0.5)',
+          'BC6_ngm3',     'BC',    'Black Carbon',                     'ng/m<sup>3</sup>', 'rgba(127, 127, 127, 0.5)'
         )
 
         # Use measured data if calibrated data is all NA
         cal_vars <- grep("_cal$", variables$var_name, value = TRUE)
         for (var in cal_vars) {
           if (all(is.na(.[[var]]))) {
-            new_var <- sub("_cal$", "_meas", var)
+            new_var <- sub("_cal$", "q", var)
             variables[variables$var_name == var, 'var_name'] <- new_var
           }
         }
 
         variables <- variables[variables$var_name %in% colnames(.), ]
+        many_vars <- nrow(variables) > 2
+        variables$long <- paste(variables$long, paste0('(', variables$units, ')'),
+                                sep = ifelse(many_vars, '\n', ' '))
 
         plot_list <- lapply(1:nrow(variables), function(i) {
           y <- .[[variables$var_name[i]]]
@@ -151,9 +154,10 @@ function(input, output, session) {
             layout(yaxis = list(range = range(y[mask]),
                                 showgrid = F,
                                 title = variables$long[i],
-                                side = ifelse((nrow(variables) > 2)
-                                                && (i %% 2 == 0),
-                                              'right', 'left')))
+                                side = ifelse(many_vars && (i %% 2 == 0),
+                                              'right', 'left'),
+                                showline = T,
+                                mirror = TRUE))
         })
         subplot(plot_list, nrows = length(plot_list), shareX = T, titleY = T) %>%
           layout(hovermode = 'compare',
