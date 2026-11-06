@@ -41,6 +41,11 @@ function(req) {
                     choices = '',
                     width = '100%'
         ),
+        selectInput('column2',
+                    label = 'Second Axis (optional)',
+                    choices = '',
+                    width = '100%'
+        ),
         actionButton('submit',
                      label = 'Search',
                      icon = icon('search')

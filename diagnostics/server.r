@@ -31,6 +31,10 @@ function(input, output, session) {
     updateSelectInput(session, 'column',
                       selected = state$input$column,
                       choices = columns())
+
+    updateSelectInput(session, 'column2',
+                      selected = state$input$column2,
+                      choices = columns())
   })
 
   # Fetch instrument options for given site
@@ -75,11 +79,13 @@ function(input, output, session) {
   observeEvent(input$instrument, {
     updateSelectInput(session, 'lvl', choices = lvls())
     updateSelectInput(session, 'column', choices = columns())
+    updateSelectInput(session, 'column2', choices = columns())
   })
 
   # On lvl change, ensure column options are up to date
   observeEvent(input$lvl, {
     updateSelectInput(session, 'column', choices = columns())
+    updateSelectInput(session, 'column2', choices = columns())
   })
 
   # If remove_failed_qc is checked, color_by is changed to ID
@@ -118,6 +124,9 @@ function(input, output, session) {
       instrument <- input$instrument
       lvl <- input$lvl
       column <- input$column
+      # Optional column for a second y axis; NULL when none is chosen
+      column2 <- input$column2
+      if (nchar(column2) == 0 || column2 == column) column2 <- NULL
       dates <- as.POSIXct(c(input$dates[1], input$dates[2] + 1), tz = 'UTC')
       remove_failed_qc <- input$remove_failed_qc
       color_by <- input$color_by
@@ -139,14 +148,19 @@ function(input, output, session) {
         data <- rbindlist(lapply(files, function(file) {
           suppressWarnings(
             fread(file, showProgress = F, data.table = F,
-                  select = c('Time_UTC', column, 'QAQC_Flag',
+                  select = c('Time_UTC', column, column2, 'QAQC_Flag',
                              'ID', 'ID_CO2', 'ID_CH4'))  # ID cols for cals
           )
         })) %>%
           mutate(Time_UTC = fastPOSIXct(Time_UTC, tz = 'UTC')) %>%
           filter(Time_UTC >= dates[1],
                  Time_UTC < dates[2]) %>%
-          na.omit()
+          as.data.frame()
+
+        # Drop rows with missing values. The second axis column is left out:
+        # a gap in it should not remove points from the first axis.
+        required <- setdiff(colnames(data), column2)
+        data <- data[complete.cases(data[required]), , drop = F]
 
         if (lvl == 'calibrated') {
           if ('ID_CH4' %in% colnames(data)) {
@@ -210,7 +224,7 @@ function(input, output, session) {
 
         data[[color_by]] <- as.factor(data[[color_by]])
 
-        data %>%
+        p <- data %>%
           plot_ly(x = ~Time_UTC, y = data[[column]],
                   name = data[[color_by]], color = data[[color_by]],
                   type = 'scattergl', mode = 'markers',
@@ -225,6 +239,25 @@ function(input, output, session) {
                               showgrid = F),
                  yaxis = list(showgrid = F,
                               title = gsub('_', ' ', column)))
+
+        # Optional second y axis on the right, in one color
+        if (!is.null(column2)) {
+          color2 <- '#444444'
+          data2 <- data[!is.na(data[[column2]]), ]
+          p <- p %>%
+            add_trace(data = data2, x = ~Time_UTC, y = data2[[column2]],
+                      name = paste(gsub('_', ' ', column2), '(right axis)'),
+                      type = 'scattergl', mode = 'markers', yaxis = 'y2',
+                      marker = list(size = 4, color = color2, opacity = 0.4),
+                      inherit = F) %>%
+            layout(yaxis2 = list(overlaying = 'y', side = 'right',
+                                 showgrid = F, automargin = T,
+                                 title = list(text = gsub('_', ' ', column2),
+                                              font = list(color = color2)),
+                                 tickfont = list(color = color2)))
+        }
+
+        p
       }
     })
   })
