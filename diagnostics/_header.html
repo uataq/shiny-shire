@@ -6,3 +6,25 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
+
+<!-- light or dark theme: the moon/sun button in the header. /theme.js is the
+     air.utah.edu site's own (uataq/air.utah.edu); it keeps the choice in the
+     browser, shared with the site, so one click sets both. -->
+<script src="/theme.js"></script>
+<style>
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="dark"] .content-wrapper,
+html[data-theme="dark"] .right-side { background-color: #181a1b !important; }
+html[data-theme="dark"] .skin-black .main-header .navbar,
+html[data-theme="dark"] .skin-black .main-header .logo,
+html[data-theme="dark"] .skin-black .main-header .logo:hover {
+  background-color: #111213; border-color: #111213;
+}
+html[data-theme="dark"] .skin-black .main-header .logo a { color: #e0e0e0 !important; }
+html[data-theme="dark"] .skin-black .main-header .navbar .nav > li > a,
+html[data-theme="dark"] .skin-black .main-header .navbar .sidebar-toggle { color: #ccc; border-color: #2b2e30; }
+html[data-theme="dark"] .skin-black .main-header .navbar .nav > li > a:hover,
+html[data-theme="dark"] .skin-black .main-header .navbar .sidebar-toggle:hover { background: #2b2e30; color: #fff; }
+html[data-theme="dark"] .skin-black .main-header > .logo { border-right-color: #2b2e30; }
+.theme-toggle:focus:not(:focus-visible) { outline: none; }
+</style>
