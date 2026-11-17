@@ -7,7 +7,11 @@ function(req) {
     title = div(a(img(src='https://air.utah.edu/img/utelogo.png', height=19),
                 'ATAQ',
                 href='http://air.utah.edu',
-                style = "color: rgb(68, 68, 68);"))
+                style = "color: rgb(68, 68, 68);")),
+    # light or dark theme (theme.js, loaded in _header.html)
+    tags$li(class = 'dropdown',
+            tags$a(href = '#', class = 'theme-toggle', title = 'Dark mode',
+                   tags$i(class = 'fa fa-fw fa-moon-o')))
   )
   
   sidebar <- dashboardSidebar(
@@ -35,7 +39,7 @@ function(req) {
   
   body <- dashboardBody(
     includeStyle <- tagList(
-      includeHTML('_header.html'),
+      tags$head(includeHTML('_header.html')),
       tags$style('#plot {height: calc(100vh - 80px) !important;}
                   #submit {margin: 15px; width: 200px; border: none;}
                  .content-wrapper, .right-side {background-color: #fff;}
